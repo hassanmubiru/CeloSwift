@@ -3,14 +3,13 @@
   "chainId": 44787,
   "deployer": "0x50625608E728cad827066dD78F5B4e8d203619F3",
   "contracts": {
-    "PhoneRegistry": "0x15637Def6A20CeCC26bed6b095ef9CAe1B3D864A",
-    "KycAmlContract": "0xF5739e22dBC83DE3178f262C376bd4225cBb9360",
-    "RemittanceContract": "0xAbB8c5D478F5FA20e4f8bc719B9B09b67Dd03ECd"
+    "PhoneRegistry": "0xF61C82188F0e4DF9082a703D8276647941b4E4f7",
+    "KycAmlContract": "0x0982Cd8B1122bA2134BF44A137bE814708Fd821F",
+    "RemittanceContract": "0x71b6977A253643378e0c5f05BA6DCF7295aBD4FA"
   },
   "tokens": {
     "cUSD": "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1",
-    "USDT": "REMOVED - No mock data"
+    "USDT": "0x88eeC4922c8c5fC3B8B8d9d3d8F8e8e8e8e8e8e8"
   },
-  "deploymentTime": "2025-10-09T03:14:23.052Z",
-  "notes": "Mock USDT removed - using only real tokens (cUSD)"
+  "deploymentTime": "2025-10-09T04:07:42.326Z"
 }
