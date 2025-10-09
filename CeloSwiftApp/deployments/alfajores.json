@@ -1,0 +1,16 @@
+{
+  "network": "alfajores",
+  "chainId": 44787,
+  "deployer": "0x50625608E728cad827066dD78F5B4e8d203619F3",
+  "contracts": {
+    "PhoneRegistry": "0x15637Def6A20CeCC26bed6b095ef9CAe1B3D864A",
+    "KycAmlContract": "0xF5739e22dBC83DE3178f262C376bd4225cBb9360",
+    "RemittanceContract": "0xAbB8c5D478F5FA20e4f8bc719B9B09b67Dd03ECd"
+  },
+  "tokens": {
+    "cUSD": "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1",
+    "USDT": "REMOVED - No mock data"
+  },
+  "deploymentTime": "2025-10-09T03:14:23.052Z",
+  "notes": "Mock USDT removed - using only real tokens (cUSD)"
+}
