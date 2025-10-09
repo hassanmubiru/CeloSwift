@@ -35,7 +35,7 @@ module.exports = {
     sepolia: {
       url: "https://forno.celo-sepolia.celo-testnet.org",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-      chainId: 44787, // Will verify this
+      chainId: 11155111, // Celo Sepolia chain ID
       gas: 8000000,
       gasPrice: 50000000000, // 50 gwei
       timeout: 60000, // 60 seconds
