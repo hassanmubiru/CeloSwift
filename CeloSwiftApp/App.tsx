@@ -22,14 +22,14 @@ const Tab = createBottomTabNavigator();
 const celoConfig = {
   networks: [
     {
-      name: 'Alfajores',
-      rpcUrl: 'https://alfajores-forno.celo-testnet.org',
-      graphQl: 'https://alfajores-blockscout.celo-testnet.org/graphiql',
-      explorer: 'https://alfajores.celoscan.io',
-      chainId: 44787,
+      name: 'Sepolia',
+      rpcUrl: 'https://forno.celo-sepolia.celo-testnet.org',
+      graphQl: 'https://sepolia-blockscout.celo-testnet.org/graphiql',
+      explorer: 'https://sepolia.celoscan.io',
+      chainId: 11142220,
     },
   ],
-  defaultNetwork: 'Alfajores',
+  defaultNetwork: 'Sepolia',
 };
 
 export default function App() {

@@ -109,7 +109,7 @@ const HomeScreen: React.FC = () => {
             </TouchableOpacity>
 
             <Text style={styles.networkInfo}>
-              Connected to: {network?.name || 'Alfajores Testnet'}
+              Connected to: {network?.name || 'Sepolia Testnet'}
             </Text>
           </View>
         </ScrollView>
@@ -158,7 +158,7 @@ const HomeScreen: React.FC = () => {
           <View style={styles.networkIndicator}>
             <View style={[styles.networkDot, { backgroundColor: '#35D07F' }]} />
             <Text style={styles.networkText}>
-              {network?.name || 'Alfajores Testnet'}
+              {network?.name || 'Sepolia Testnet'}
             </Text>
           </View>
         </View>

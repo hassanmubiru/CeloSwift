@@ -2,7 +2,7 @@
   "name": "celoswiftapp",
   "version": "1.0.0",
   "description": "Mobile-first decentralized remittance application on Celo",
-  "main": "index.js",
+  "main": "App.tsx",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
