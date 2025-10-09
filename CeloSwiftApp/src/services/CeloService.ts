@@ -74,16 +74,16 @@ const PHONE_REGISTRY_ABI = [
   }
 ];
 
-// Token addresses for Alfajores testnet (real tokens only)
+// Token addresses for Celo Sepolia testnet (real tokens only)
 const TOKEN_ADDRESSES = {
-  CUSD: '0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1', // Real cUSD on Alfajores
-  CELO: '0xF194afDf50B03e69Bd7D057c1Aa9e10c9954E4C9', // Real CELO on Alfajores
-  // USDT: Not available on Alfajores testnet - no mock data
+  CUSD: '0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1', // Real cUSD on Sepolia
+  CELO: '0xF194afDf50B03e69Bd7D057c1Aa9e10c9954E4C9', // Real CELO on Sepolia
+  // USDT: Not available on Sepolia testnet - no mock data
 };
 
-// Contract addresses (deployed on Alfajores testnet)
-let REMITTANCE_CONTRACT_ADDRESS = '0xAbB8c5D478F5FA20e4f8bc719B9B09b67Dd03ECd';
-let PHONE_REGISTRY_ADDRESS = '0x15637Def6A20CeCC26bed6b095ef9CAe1B3D864A';
+// Contract addresses (deployed on Celo Sepolia testnet)
+let REMITTANCE_CONTRACT_ADDRESS = '0x71b6977A253643378e0c5f05BA6DCF7295aBD4FA';
+let PHONE_REGISTRY_ADDRESS = '0xF61C82188F0e4DF9082a703D8276647941b4E4f7';
 
 export interface RemittanceData {
   id: number;
@@ -124,8 +124,8 @@ class CeloService {
 
   private async initializeKit() {
     try {
-      // Initialize ContractKit with Alfajores testnet
-      this.kit = newKit('https://alfajores-forno.celo-testnet.org');
+      // Initialize ContractKit with Celo Sepolia testnet
+      this.kit = newKit('https://forno.celo-sepolia.celo-testnet.org');
     } catch (error) {
       console.error('Failed to initialize ContractKit:', error);
     }
@@ -326,7 +326,7 @@ class CeloService {
 
   async getExchangeRates(): Promise<ExchangeRate[]> {
     // In a real implementation, this would fetch from an oracle or API
-    // For now, return mock data
+    // For now, return mock data with Uganda and Kenya exchange rates
     return [
       {
         from: 'cUSD',
@@ -335,21 +335,21 @@ class CeloService {
         timestamp: Date.now(),
       },
       {
-        from: 'USDT',
-        to: 'USD',
-        rate: 1.0,
+        from: 'cUSD',
+        to: 'UGX', // Ugandan Shilling
+        rate: 3700.0,
+        timestamp: Date.now(),
+      },
+      {
+        from: 'cUSD',
+        to: 'KES', // Kenyan Shilling
+        rate: 130.0,
         timestamp: Date.now(),
       },
       {
         from: 'cUSD',
         to: 'EUR',
         rate: 0.85,
-        timestamp: Date.now(),
-      },
-      {
-        from: 'cUSD',
-        to: 'NGN',
-        rate: 460.0,
         timestamp: Date.now(),
       },
     ];
