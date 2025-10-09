@@ -32,6 +32,14 @@ module.exports = {
       gas: 8000000,
       gasPrice: 20000000000, // 20 gwei
     },
+    sepolia: {
+      url: "https://sepolia-forno.celo-testnet.org",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      chainId: 44787, // Same as Alfajores for now
+      gas: 8000000,
+      gasPrice: 50000000000, // 50 gwei
+      timeout: 60000, // 60 seconds
+    },
   },
   etherscan: {
     apiKey: {
