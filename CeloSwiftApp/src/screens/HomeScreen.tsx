@@ -244,6 +244,75 @@ const HomeScreen: React.FC = () => {
     );
   }
 
+  if (isConnected) {
+    return (
+      <View style={styles.container}>
+        <StatusBar barStyle="light-content" backgroundColor={theme.colors.primary} />
+        
+        <Header
+          title="Welcome back!"
+          subtitle={address ? `${address.slice(0, 6)}...${address.slice(-4)}` : ''}
+          onProfilePress={() => navigation.navigate('Profile' as never)}
+        />
+
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          refreshControl={
+            <RefreshControl 
+              refreshing={refreshing} 
+              onRefresh={onRefresh}
+              tintColor={theme.colors.primary}
+            />
+          }
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.content}>
+            <StatusIndicator
+              status="connected"
+              network={networkInfo?.name || 'Celo Alfajores'}
+              address={address}
+            />
+
+            <BalanceCard balance={balance} currency="cUSD" />
+
+            <ExchangeRateCard rate={exchangeRate} />
+
+            <QuickActions
+              onSendPress={() => handleQuickAction('send')}
+              onReceivePress={() => handleQuickAction('receive')}
+              onScanPress={() => handleQuickAction('scan')}
+              onHistoryPress={() => handleQuickAction('history')}
+            />
+
+            <RecentTransactions />
+          </View>
+        </ScrollView>
+
+        {/* Wallet Connection Modal */}
+        <WalletConnectionModal
+          visible={showWalletModal}
+          onClose={() => setShowWalletModal(false)}
+          onConnect={handleWalletConnect}
+        />
+
+        {/* Wallet Instructions Modal */}
+        <Modal
+          visible={showInstructions}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={() => setShowInstructions(false)}
+        >
+          <View style={styles.instructionsOverlay}>
+            <WalletInstructions
+              walletType={selectedWallet}
+              onClose={() => setShowInstructions(false)}
+            />
+          </View>
+        </Modal>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <ScrollView
@@ -475,6 +544,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  content: {
+    padding: theme.spacing.lg,
   },
 });
 
