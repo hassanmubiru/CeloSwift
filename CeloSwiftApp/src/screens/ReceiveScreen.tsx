@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,13 +9,18 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useCelo } from '@celo/react-celo';
+import CeloService from '../services/CeloService';
 import QRCode from 'react-native-qrcode-svg';
 
 const ReceiveScreen: React.FC = () => {
-  const { address } = useCelo();
+  const [address, setAddress] = useState<string | null>(null);
   const [selectedToken, setSelectedToken] = useState('cUSD');
   const [amount, setAmount] = useState('');
+
+  useEffect(() => {
+    const walletAddress = CeloService.getAddress();
+    setAddress(walletAddress);
+  }, []);
 
   const tokens = [
     { symbol: 'cUSD', name: 'Celo USD', balance: '1,250.50' },

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,21 +10,47 @@ import {
   Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useCelo } from '@celo/react-celo';
+import CeloService from '../services/CeloService';
 import QRCodeScanner from '../components/QRCodeScanner';
 
 const SendScreen: React.FC = () => {
-  const { address } = useCelo();
+  const [address, setAddress] = useState<string | null>(null);
   const [amount, setAmount] = useState('');
   const [recipient, setRecipient] = useState('');
   const [selectedToken, setSelectedToken] = useState('cUSD');
   const [isScannerVisible, setIsScannerVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [tokenBalances, setTokenBalances] = useState<{[key: string]: string}>({});
 
   const tokens = [
-    { symbol: 'cUSD', name: 'Celo USD', balance: '1,250.50' },
-    { symbol: 'USDT', name: 'Tether USD', balance: '0.00' },
+    { symbol: 'cUSD', name: 'Celo USD', address: CeloService.TOKEN_ADDRESSES.CUSD, balance: tokenBalances.cUSD || '0.00' },
+    { symbol: 'CELO', name: 'Celo Native', address: CeloService.TOKEN_ADDRESSES.CELO, balance: tokenBalances.CELO || '0.00' },
   ];
+
+  useEffect(() => {
+    checkWalletConnection();
+  }, []);
+
+  const checkWalletConnection = () => {
+    const walletAddress = CeloService.getAddress();
+    setAddress(walletAddress);
+    if (walletAddress) {
+      fetchTokenBalances();
+    }
+  };
+
+  const fetchTokenBalances = async () => {
+    try {
+      const balances: {[key: string]: string} = {};
+      for (const token of tokens) {
+        const balance = await CeloService.getBalance(token.address);
+        balances[token.symbol] = balance;
+      }
+      setTokenBalances(balances);
+    } catch (error) {
+      console.error('Error fetching token balances:', error);
+    }
+  };
 
   const handleSend = async () => {
     if (!amount || !recipient) {
@@ -37,22 +63,43 @@ const SendScreen: React.FC = () => {
       return;
     }
 
+    if (!address) {
+      Alert.alert('Error', 'Wallet not connected');
+      return;
+    }
+
     setIsLoading(true);
     
     try {
-      // Simulate transaction
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      Alert.alert(
-        'Success',
-        `Successfully sent ${amount} ${selectedToken} to ${recipient}`,
-        [{ text: 'OK', onPress: () => {
-          setAmount('');
-          setRecipient('');
-        }}]
+      const selectedTokenData = tokens.find(t => t.symbol === selectedToken);
+      if (!selectedTokenData) {
+        throw new Error('Invalid token selected');
+      }
+
+      // Create remittance using CeloService
+      const txHash = await CeloService.createRemittance(
+        recipient,
+        selectedTokenData.address,
+        amount,
+        `Send ${amount} ${selectedToken} to ${recipient}`
       );
+
+      if (txHash) {
+        Alert.alert(
+          'Success',
+          `Successfully sent ${amount} ${selectedToken} to ${recipient}\nTransaction: ${txHash.slice(0, 10)}...`,
+          [{ text: 'OK', onPress: () => {
+            setAmount('');
+            setRecipient('');
+            fetchTokenBalances(); // Refresh balances
+          }}]
+        );
+      } else {
+        throw new Error('Transaction failed');
+      }
     } catch (error) {
-      Alert.alert('Error', 'Transaction failed');
+      console.error('Send error:', error);
+      Alert.alert('Error', 'Transaction failed. Please try again.');
     } finally {
       setIsLoading(false);
     }

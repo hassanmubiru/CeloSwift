@@ -9,7 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useCelo } from '@celo/react-celo';
+import CeloService from '../services/CeloService';
 
 interface Transaction {
   id: string;
@@ -26,10 +26,52 @@ interface Transaction {
 }
 
 const HistoryScreen: React.FC = () => {
-  const { address } = useCelo();
+  const [address, setAddress] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'sent' | 'received'>('all');
+
+  useEffect(() => {
+    const walletAddress = CeloService.getAddress();
+    setAddress(walletAddress);
+    if (walletAddress) {
+      fetchTransactions();
+    }
+  }, []);
+
+  const fetchTransactions = async () => {
+    try {
+      if (!address) return;
+      
+      // Get user remittances from the contract
+      const remittanceIds = await CeloService.getUserRemittances();
+      const userTransactions: Transaction[] = [];
+      
+      for (const id of remittanceIds) {
+        const remittance = await CeloService.getRemittance(Number(id));
+        if (remittance) {
+          userTransactions.push({
+            id: id.toString(),
+            type: remittance.sender.toLowerCase() === address.toLowerCase() ? 'sent' : 'received',
+            amount: remittance.amount,
+            currency: 'cUSD', // Default for now
+            recipient: remittance.recipientPhone,
+            sender: remittance.sender,
+            timestamp: new Date(remittance.timestamp * 1000).toISOString(),
+            status: remittance.isCompleted ? 'completed' : 'pending',
+            hash: '', // Would need to get from transaction receipt
+            fee: remittance.fee,
+          });
+        }
+      }
+      
+      setTransactions(userTransactions);
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
+      // Fallback to mock data if contract fails
+      setTransactions(mockTransactions);
+    }
+  };
 
   // Mock data for demonstration
   const mockTransactions: Transaction[] = [

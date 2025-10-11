@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,13 +9,18 @@ import {
   Switch,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useCelo } from '@celo/react-celo';
+import CeloService from '../services/CeloService';
 
 const ProfileScreen: React.FC = () => {
-  const { address, disconnect, network } = useCelo();
+  const [address, setAddress] = useState<string | null>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   const [kycStatus, setKycStatus] = useState<'pending' | 'verified' | 'rejected'>('pending');
+
+  useEffect(() => {
+    const walletAddress = CeloService.getAddress();
+    setAddress(walletAddress);
+  }, []);
 
   const handleDisconnect = () => {
     Alert.alert(
@@ -23,7 +28,10 @@ const ProfileScreen: React.FC = () => {
       'Are you sure you want to disconnect your wallet?',
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Disconnect', style: 'destructive', onPress: disconnect }
+        { text: 'Disconnect', style: 'destructive', onPress: () => {
+          CeloService.disconnect();
+          setAddress(null);
+        }}
       ]
     );
   };
