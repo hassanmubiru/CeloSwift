@@ -68,22 +68,40 @@ const HomeScreen: React.FC = () => {
     }
   };
 
-  const handleConnectWallet = async () => {
+  const handleConnectWallet = () => {
+    setShowWalletModal(true);
+  };
+
+  const handleWalletConnect = async (walletType: string) => {
     try {
-      // Use the private key from environment variables
-      const privateKey = '0x7ce93d1cea9c8e3281af7c8e51b724c437711b0f1aafdb28a2a17fa8b317368b';
-      
-      const connected = await CeloService.connectWallet(privateKey);
-      if (connected) {
-        const walletAddress = CeloService.getAddress();
-        if (walletAddress) {
-          setIsConnected(true);
-          setAddress(walletAddress);
-          await fetchUserData();
-        }
-      } else {
-        Alert.alert('Error', 'Failed to connect wallet');
-      }
+      // For demo purposes, we'll simulate a successful connection
+      // In a real app, this would integrate with the actual wallet
+      Alert.alert(
+        'Wallet Connection',
+        `Connecting to ${walletType}...\n\nFor demo purposes, we'll use a test wallet. In production, this would connect to your actual ${walletType} wallet.`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Continue with Demo', 
+            onPress: async () => {
+              // Use demo private key for testing
+              const demoPrivateKey = '0x7ce93d1cea9c8e3281af7c8e51b724c437711b0f1aafdb28a2a17fa8b317368b';
+              
+              const connected = await CeloService.connectWallet(demoPrivateKey);
+              if (connected) {
+                const walletAddress = CeloService.getAddress();
+                if (walletAddress) {
+                  setIsConnected(true);
+                  setAddress(walletAddress);
+                  await fetchUserData();
+                }
+              } else {
+                Alert.alert('Error', 'Failed to connect wallet');
+              }
+            }
+          }
+        ]
+      );
     } catch (error) {
       Alert.alert('Error', 'Failed to connect wallet');
     }
@@ -170,10 +188,19 @@ const HomeScreen: React.FC = () => {
               style={styles.connectButton}
               onPress={handleConnectWallet}
             >
-              <Ionicons name="wallet" size={24} color="#FFFFFF" />
-              <Text style={styles.connectButtonText}>
-                {isConnected ? 'Wallet Connected' : 'Connect Wallet'}
-              </Text>
+              <View style={styles.connectButtonContent}>
+                <Ionicons name="wallet" size={24} color="#FFFFFF" />
+                <View style={styles.connectButtonTextContainer}>
+                  <Text style={styles.connectButtonText}>
+                    {isConnected ? 'Wallet Connected' : 'Connect Wallet'}
+                  </Text>
+                  {!isConnected && (
+                    <Text style={styles.connectButtonSubtext}>
+                      MetaMask, WalletConnect & more
+                    </Text>
+                  )}
+                </View>
+              </View>
             </TouchableOpacity>
 
             <View style={styles.faucetInfo}>
@@ -191,6 +218,13 @@ const HomeScreen: React.FC = () => {
             </Text>
           </View>
         </ScrollView>
+
+        {/* Wallet Connection Modal */}
+        <WalletConnectionModal
+          visible={showWalletModal}
+          onClose={() => setShowWalletModal(false)}
+          onConnect={handleWalletConnect}
+        />
       </View>
     );
   }
@@ -315,11 +349,23 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
   },
+  connectButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  connectButtonTextContainer: {
+    marginLeft: 8,
+  },
   connectButtonText: {
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
-    marginLeft: 8,
+  },
+  connectButtonSubtext: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    opacity: 0.8,
+    marginTop: 2,
   },
   networkInfo: {
     fontSize: 14,
