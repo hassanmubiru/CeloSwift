@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   RefreshControl,
+  Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -16,6 +17,7 @@ import QuickActions from '../components/QuickActions';
 import RecentTransactions from '../components/RecentTransactions';
 import ExchangeRateCard from '../components/ExchangeRateCard';
 import WalletConnectionModal from '../components/WalletConnectionModal';
+import WalletInstructions from '../components/WalletInstructions';
 
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -26,6 +28,8 @@ const HomeScreen: React.FC = () => {
   const [exchangeRate, setExchangeRate] = useState(1.0);
   const [networkInfo, setNetworkInfo] = useState<any>(null);
   const [showWalletModal, setShowWalletModal] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
+  const [selectedWallet, setSelectedWallet] = useState('');
 
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
@@ -73,72 +77,8 @@ const HomeScreen: React.FC = () => {
   };
 
   const handleWalletConnect = async (walletType: string) => {
-    try {
-      if (walletType === 'metamask') {
-        Alert.alert(
-          'MetaMask Connection',
-          'To connect MetaMask:\n\n1. Install MetaMask browser extension\n2. Switch to Celo Alfajores network\n3. Return to this app and try again',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            { 
-              text: 'Open MetaMask', 
-              onPress: () => {
-                // In a real app, this would trigger MetaMask connection
-                Alert.alert(
-                  'MetaMask Integration',
-                  'MetaMask integration will be available in the web version of this app. For mobile, please use WalletConnect or another mobile wallet.',
-                  [{ text: 'OK' }]
-                );
-              }
-            }
-          ]
-        );
-      } else if (walletType === 'walletconnect') {
-        Alert.alert(
-          'WalletConnect',
-          'WalletConnect integration is coming soon. This will allow you to connect any WalletConnect compatible wallet.',
-          [{ text: 'OK' }]
-        );
-      } else if (walletType === 'coinbase') {
-        Alert.alert(
-          'Coinbase Wallet',
-          'To connect Coinbase Wallet:\n\n1. Install Coinbase Wallet browser extension\n2. Switch to Celo Alfajores network\n3. Return to this app and try again',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            { 
-              text: 'Open Coinbase', 
-              onPress: () => {
-                Alert.alert(
-                  'Coinbase Integration',
-                  'Coinbase Wallet integration will be available in the web version of this app.',
-                  [{ text: 'OK' }]
-                );
-              }
-            }
-          ]
-        );
-      } else if (walletType === 'trust') {
-        Alert.alert(
-          'Trust Wallet',
-          'To connect Trust Wallet:\n\n1. Open Trust Wallet app on your phone\n2. Go to Settings > WalletConnect\n3. Scan the QR code that will be displayed',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            { 
-              text: 'Continue', 
-              onPress: () => {
-                Alert.alert(
-                  'Trust Wallet Integration',
-                  'Trust Wallet integration via WalletConnect is coming soon.',
-                  [{ text: 'OK' }]
-                );
-              }
-            }
-          ]
-        );
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to connect wallet');
-    }
+    setSelectedWallet(walletType);
+    setShowInstructions(true);
   };
 
   const handleQuickAction = (action: string) => {
@@ -273,6 +213,21 @@ const HomeScreen: React.FC = () => {
           onClose={() => setShowWalletModal(false)}
           onConnect={handleWalletConnect}
         />
+
+        {/* Wallet Instructions Modal */}
+        <Modal
+          visible={showInstructions}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={() => setShowInstructions(false)}
+        >
+          <View style={styles.instructionsOverlay}>
+            <WalletInstructions
+              walletType={selectedWallet}
+              onClose={() => setShowInstructions(false)}
+            />
+          </View>
+        </Modal>
       </View>
     );
   }
