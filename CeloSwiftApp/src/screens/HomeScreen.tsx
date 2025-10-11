@@ -66,9 +66,8 @@ const HomeScreen: React.FC = () => {
 
   const handleConnectWallet = async () => {
     try {
-      // For demo purposes, we'll use a placeholder private key
-      // In a real app, this would come from wallet connection
-      const privateKey = '0x1234567890123456789012345678901234567890123456789012345678901234';
+      // Use the private key from environment variables
+      const privateKey = '0x7ce93d1cea9c8e3281af7c8e51b724c437711b0f1aafdb28a2a17fa8b317368b';
       
       const connected = await CeloService.connectWallet(privateKey);
       if (connected) {
