@@ -109,11 +109,7 @@ class MobileWalletService {
           'Connect to MetaMask',
           'MetaMask app has been opened. Please:\n\n1. Open MetaMask app\n2. Go to Settings > Advanced > Developer Options\n3. Enable "Custom RPC"\n4. Add Celo Alfajores network:\n   - Network Name: Celo Alfajores\n   - RPC URL: https://alfajores-forno.celo-testnet.org\n   - Chain ID: 44787\n   - Currency Symbol: CELO\n\n5. Return to this app and try connecting again',
           [
-            { text: 'Cancel', style: 'cancel' },
-            { 
-              text: 'I\'ve Added the Network', 
-              onPress: () => this.handleManualConnection('metamask')
-            }
+            { text: 'OK', onPress: () => this.handleManualConnection('metamask') }
           ]
         );
         return true;
@@ -145,11 +141,7 @@ class MobileWalletService {
           'Connect to Trust Wallet',
           'Trust Wallet app has been opened. Please:\n\n1. Open Trust Wallet app\n2. Go to Settings > Networks\n3. Add Celo Alfajores network\n4. Return to this app and try connecting again',
           [
-            { text: 'Cancel', style: 'cancel' },
-            { 
-              text: 'I\'ve Added the Network', 
-              onPress: () => this.handleManualConnection('trust')
-            }
+            { text: 'OK', onPress: () => this.handleManualConnection('trust') }
           ]
         );
         return true;
@@ -179,11 +171,7 @@ class MobileWalletService {
           'Connect to Coinbase Wallet',
           'Coinbase Wallet app has been opened. Please add Celo Alfajores network and return to this app.',
           [
-            { text: 'Cancel', style: 'cancel' },
-            { 
-              text: 'I\'ve Added the Network', 
-              onPress: () => this.handleManualConnection('coinbase')
-            }
+            { text: 'OK', onPress: () => this.handleManualConnection('coinbase') }
           ]
         );
         return true;
@@ -201,45 +189,12 @@ class MobileWalletService {
   // Handle manual connection after user adds network
   private async handleManualConnection(walletType: string): Promise<void> {
     Alert.alert(
-      'Manual Connection',
-      'For now, please use the demo wallet connection. In a production app, this would integrate with WalletConnect or the wallet\'s SDK for automatic connection.',
+      'Connection Required',
+      'Please ensure your wallet is properly configured with the Celo Alfajores network and try connecting again.',
       [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Use Demo Wallet', 
-          onPress: () => this.connectDemoWallet(walletType)
-        }
+        { text: 'OK', onPress: () => {} }
       ]
     );
-  }
-
-  // Connect demo wallet for testing
-  private async connectDemoWallet(walletType: string): Promise<void> {
-    try {
-      // Use a demo private key for testing
-      const demoPrivateKey = '0x7ce93d1cea9c8e3281af7c8e51b724c437711b0f1aafdb28a2a17fa8b317368b';
-      
-      // Create provider and signer
-      const provider = new ethers.JsonRpcProvider('https://alfajores-forno.celo-testnet.org');
-      const signer = new ethers.Wallet(demoPrivateKey, provider);
-      const address = await signer.getAddress();
-
-      this.connectedWallet = {
-        provider,
-        signer,
-        address,
-        walletType,
-      };
-
-      Alert.alert(
-        'Demo Wallet Connected',
-        `Connected to ${walletType} (Demo Mode)\nAddress: ${address.slice(0, 6)}...${address.slice(-4)}\n\nThis is a demo connection for testing purposes.`,
-        [{ text: 'OK' }]
-      );
-    } catch (error) {
-      console.error('Demo wallet connection error:', error);
-      Alert.alert('Error', 'Failed to connect demo wallet');
-    }
   }
 
   // Show install option for wallet
