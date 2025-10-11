@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import WalletDetectionService, { WalletInfo } from '../services/WalletDetectionService';
+import Web3ProviderService from '../services/Web3ProviderService';
 
 interface WalletConnectionModalProps {
   visible: boolean;
@@ -47,20 +48,24 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
     if (wallet.installed) {
       // Wallet is installed, try to connect directly
       if (wallet.id === 'metamask') {
-        const success = await WalletDetectionService.openMetaMask();
-        if (success) {
-          onConnect(wallet.id);
-          onClose();
-        } else {
-          Alert.alert('Error', 'Failed to connect to MetaMask. Please try again.');
+        try {
+          const success = await Web3ProviderService.connectMetaMask();
+          if (success) {
+            onConnect(wallet.id);
+            onClose();
+          }
+        } catch (error) {
+          console.error('MetaMask connection failed:', error);
         }
       } else if (wallet.id === 'coinbase') {
-        const success = await WalletDetectionService.openCoinbaseWallet();
-        if (success) {
-          onConnect(wallet.id);
-          onClose();
-        } else {
-          Alert.alert('Error', 'Failed to connect to Coinbase Wallet. Please try again.');
+        try {
+          const success = await Web3ProviderService.connectCoinbaseWallet();
+          if (success) {
+            onConnect(wallet.id);
+            onClose();
+          }
+        } catch (error) {
+          console.error('Coinbase Wallet connection failed:', error);
         }
       } else {
         // For other wallets, just trigger the connection flow
