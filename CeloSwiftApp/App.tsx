@@ -1,4 +1,5 @@
 import 'react-native-get-random-values';
+import 'react-native-url-polyfill/auto';
 import React from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, SafeAreaView } from 'react-native';

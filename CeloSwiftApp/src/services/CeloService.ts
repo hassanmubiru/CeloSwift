@@ -71,10 +71,14 @@ class CeloService {
   private kycAmlContract: ethers.Contract | null = null;
 
   constructor() {
-    this.initializeProvider();
+    // Don't initialize provider immediately to avoid startup issues
   }
 
   private initializeProvider() {
+    if (this.provider) {
+      return; // Already initialized
+    }
+    
     try {
       // Celo Alfajores RPC endpoint (matching deployed contracts)
       this.provider = new ethers.JsonRpcProvider('https://alfajores-forno.celo-testnet.org');
@@ -86,6 +90,8 @@ class CeloService {
 
   async connectWallet(privateKey: string): Promise<boolean> {
     try {
+      this.initializeProvider();
+      
       if (!this.provider) {
         throw new Error('Provider not initialized');
       }
@@ -317,6 +323,8 @@ class CeloService {
   }
 
   async getNetworkInfo() {
+    this.initializeProvider();
+    
     if (!this.provider) {
       return null;
     }
