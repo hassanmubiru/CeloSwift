@@ -25,6 +25,7 @@ const HomeScreen: React.FC = () => {
   const [balance, setBalance] = useState('0.00');
   const [exchangeRate, setExchangeRate] = useState(1.0);
   const [networkInfo, setNetworkInfo] = useState<any>(null);
+  const [showWalletModal, setShowWalletModal] = useState(false);
 
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
@@ -46,31 +47,8 @@ const HomeScreen: React.FC = () => {
     try {
       const network = await CeloService.getNetworkInfo();
       setNetworkInfo(network);
-      
-      // Auto-connect wallet
-      await autoConnectWallet();
     } catch (error) {
       console.error('Error initializing app:', error);
-    }
-  };
-
-  const autoConnectWallet = async () => {
-    try {
-      // Use the private key from environment variables
-      const privateKey = '0x7ce93d1cea9c8e3281af7c8e51b724c437711b0f1aafdb28a2a17fa8b317368b';
-      
-      const connected = await CeloService.connectWallet(privateKey);
-      if (connected) {
-        const walletAddress = CeloService.getAddress();
-        if (walletAddress) {
-          setIsConnected(true);
-          setAddress(walletAddress);
-          await fetchUserData();
-        }
-      }
-    } catch (error) {
-      console.log('Auto-connect failed:', error);
-      // Don't show error for auto-connect, user can manually connect
     }
   };
 
