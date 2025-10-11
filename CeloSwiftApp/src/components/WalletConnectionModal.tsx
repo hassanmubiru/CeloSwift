@@ -22,44 +22,89 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   onClose,
   onConnect,
 }) => {
-  const wallets = [
-    {
-      id: 'metamask',
-      name: 'MetaMask',
-      description: 'Connect using MetaMask browser extension',
-      icon: 'logo-bitcoin',
-      color: '#F6851B',
-      action: 'extension',
-    },
-    {
-      id: 'walletconnect',
-      name: 'WalletConnect',
-      description: 'Connect using any WalletConnect compatible wallet',
-      icon: 'link',
-      color: '#3B99FC',
-      action: 'walletconnect',
-    },
-    {
-      id: 'coinbase',
-      name: 'Coinbase Wallet',
-      description: 'Connect using Coinbase Wallet',
-      icon: 'wallet',
-      color: '#0052FF',
-      action: 'extension',
-    },
-    {
-      id: 'trust',
-      name: 'Trust Wallet',
-      description: 'Connect using Trust Wallet',
-      icon: 'shield-checkmark',
-      color: '#3375BB',
-      action: 'mobile',
-    },
-  ];
+  const [wallets, setWallets] = useState<WalletInfo[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleWalletPress = (wallet: any) => {
-    onConnect(wallet.id);
-    onClose();
+  useEffect(() => {
+    if (visible) {
+      loadWalletInfo();
+    }
+  }, [visible]);
+
+  const loadWalletInfo = async () => {
+    setLoading(true);
+    try {
+      const walletInfo = await WalletDetectionService.getWalletInfo();
+      setWallets(walletInfo);
+    } catch (error) {
+      console.error('Error loading wallet info:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleWalletPress = async (wallet: WalletInfo) => {
+    if (wallet.installed) {
+      // Wallet is installed, try to connect directly
+      if (wallet.id === 'metamask') {
+        const success = await WalletDetectionService.openMetaMask();
+        if (success) {
+          onConnect(wallet.id);
+          onClose();
+        } else {
+          Alert.alert('Error', 'Failed to connect to MetaMask. Please try again.');
+        }
+      } else if (wallet.id === 'coinbase') {
+        const success = await WalletDetectionService.openCoinbaseWallet();
+        if (success) {
+          onConnect(wallet.id);
+          onClose();
+        } else {
+          Alert.alert('Error', 'Failed to connect to Coinbase Wallet. Please try again.');
+        }
+      } else {
+        // For other wallets, just trigger the connection flow
+        onConnect(wallet.id);
+        onClose();
+      }
+    } else {
+      // Wallet not installed, show download option
+      Alert.alert(
+        `Install ${wallet.name}`,
+        wallet.description,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Install', 
+            onPress: () => {
+              if (wallet.downloadUrl) {
+                Linking.openURL(wallet.downloadUrl);
+              }
+            }
+          }
+        ]
+      );
+    }
+  };
+
+  const getWalletIcon = (walletId: string) => {
+    const icons: { [key: string]: keyof typeof Ionicons.glyphMap } = {
+      metamask: 'logo-bitcoin',
+      coinbase: 'wallet',
+      walletconnect: 'link',
+      trust: 'shield-checkmark',
+    };
+    return icons[walletId] || 'wallet';
+  };
+
+  const getWalletColor = (walletId: string) => {
+    const colors: { [key: string]: string } = {
+      metamask: '#F6851B',
+      coinbase: '#0052FF',
+      walletconnect: '#3B99FC',
+      trust: '#3375BB',
+    };
+    return colors[walletId] || '#35D07F';
   };
 
   return (
@@ -83,22 +128,35 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
           </Text>
 
           <View style={styles.walletList}>
-            {wallets.map((wallet) => (
-              <TouchableOpacity
-                key={wallet.id}
-                style={styles.walletItem}
-                onPress={() => handleWalletPress(wallet)}
-              >
-                <View style={[styles.walletIcon, { backgroundColor: wallet.color }]}>
-                  <Ionicons name={wallet.icon as any} size={24} color="#FFFFFF" />
-                </View>
-                <View style={styles.walletInfo}>
-                  <Text style={styles.walletName}>{wallet.name}</Text>
-                  <Text style={styles.walletDescription}>{wallet.description}</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
-              </TouchableOpacity>
-            ))}
+            {loading ? (
+              <View style={styles.loadingContainer}>
+                <Text style={styles.loadingText}>Checking installed wallets...</Text>
+              </View>
+            ) : (
+              wallets.map((wallet) => (
+                <TouchableOpacity
+                  key={wallet.id}
+                  style={styles.walletItem}
+                  onPress={() => handleWalletPress(wallet)}
+                >
+                  <View style={[styles.walletIcon, { backgroundColor: getWalletColor(wallet.id) }]}>
+                    <Ionicons name={getWalletIcon(wallet.id)} size={24} color="#FFFFFF" />
+                  </View>
+                  <View style={styles.walletInfo}>
+                    <View style={styles.walletNameRow}>
+                      <Text style={styles.walletName}>{wallet.name}</Text>
+                      {wallet.installed && (
+                        <View style={styles.installedBadge}>
+                          <Text style={styles.installedText}>Installed</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={styles.walletDescription}>{wallet.description}</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+                </TouchableOpacity>
+              ))
+            )}
           </View>
 
           <View style={styles.footer}>
@@ -170,16 +228,42 @@ const styles = StyleSheet.create({
   walletInfo: {
     flex: 1,
   },
+  walletNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
   walletName: {
     fontSize: 18,
     fontWeight: '600',
     color: '#1C1C1E',
-    marginBottom: 4,
+    flex: 1,
+  },
+  installedBadge: {
+    backgroundColor: '#10B981',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+    marginLeft: 8,
+  },
+  installedText: {
+    fontSize: 12,
+    color: '#FFFFFF',
+    fontWeight: '500',
   },
   walletDescription: {
     fontSize: 14,
     color: '#666',
     lineHeight: 20,
+  },
+  loadingContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
   },
   footer: {
     paddingTop: 20,
