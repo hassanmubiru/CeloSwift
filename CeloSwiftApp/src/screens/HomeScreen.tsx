@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import CeloService, { TOKEN_ADDRESSES } from '../services/CeloService';
+import Web3ProviderService from '../services/Web3ProviderService';
 import BalanceCard from '../components/BalanceCard';
 import QuickActions from '../components/QuickActions';
 import RecentTransactions from '../components/RecentTransactions';
@@ -60,6 +61,14 @@ const HomeScreen: React.FC = () => {
     try {
       const network = await CeloService.getNetworkInfo();
       setNetworkInfo(network);
+      
+      // Check if we're already connected to a web3 wallet
+      const connectionStatus = Web3ProviderService.getConnectionStatus();
+      if (connectionStatus.connected && connectionStatus.address) {
+        setIsConnected(true);
+        setAddress(connectionStatus.address);
+        await fetchUserData();
+      }
     } catch (error) {
       console.error('Error initializing app:', error);
     }
@@ -92,12 +101,35 @@ const HomeScreen: React.FC = () => {
 
   const handleWalletConnect = async (walletType: string) => {
     if (walletType === 'metamask' || walletType === 'coinbase') {
-      // For installed wallets, show success message
-      Alert.alert(
-        'Wallet Connected',
-        `${walletType === 'metamask' ? 'MetaMask' : 'Coinbase Wallet'} connection initiated. Please complete the connection in your wallet app.`,
-        [{ text: 'OK' }]
-      );
+      // Check if we actually connected
+      const connectionStatus = Web3ProviderService.getConnectionStatus();
+      
+      if (connectionStatus.connected && connectionStatus.address) {
+        // Successfully connected
+        setIsConnected(true);
+        setAddress(connectionStatus.address);
+        
+        // Update CeloService with the web3 provider
+        if (connectionStatus.provider && connectionStatus.signer) {
+          // Use the web3 provider for Celo operations
+          await CeloService.connectExternalWallet(connectionStatus.provider);
+        }
+        
+        // Fetch user data
+        await fetchUserData();
+        
+        Alert.alert(
+          'Wallet Connected Successfully!',
+          `Connected to ${walletType === 'metamask' ? 'MetaMask' : 'Coinbase Wallet'}\nAddress: ${connectionStatus.address.slice(0, 6)}...${connectionStatus.address.slice(-4)}`,
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert(
+          'Connection Failed',
+          `Failed to connect to ${walletType === 'metamask' ? 'MetaMask' : 'Coinbase Wallet'}. Please try again.`,
+          [{ text: 'OK' }]
+        );
+      }
     } else {
       // For other wallets, show instructions
       setSelectedWallet(walletType);
@@ -136,6 +168,7 @@ const HomeScreen: React.FC = () => {
 
   const handleDisconnectWallet = async () => {
     try {
+      Web3ProviderService.disconnect();
       CeloService.disconnect();
       setIsConnected(false);
       setAddress('');
