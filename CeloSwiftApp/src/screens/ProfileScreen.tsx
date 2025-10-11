@@ -138,7 +138,7 @@ const ProfileScreen: React.FC = () => {
             <View style={styles.networkBadge}>
               <View style={[styles.networkDot, { backgroundColor: '#35D07F' }]} />
               <Text style={styles.networkText}>
-                {network?.name || 'Alfajores Testnet'}
+                {network?.name || 'Celo Alfajores'}
               </Text>
             </View>
           </View>
@@ -284,7 +284,7 @@ const ProfileScreen: React.FC = () => {
           <View style={styles.aboutItem}>
             <Text style={styles.aboutLabel}>Network</Text>
             <Text style={styles.aboutValue}>
-              {network?.name || 'Alfajores Testnet'}
+              {network?.name || 'Celo Alfajores'}
             </Text>
           </View>
           

@@ -9,6 +9,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import CeloService, { TOKEN_ADDRESSES } from '../services/CeloService';
 import BalanceCard from '../components/BalanceCard';
 import QuickActions from '../components/QuickActions';
@@ -16,6 +17,7 @@ import RecentTransactions from '../components/RecentTransactions';
 import ExchangeRateCard from '../components/ExchangeRateCard';
 
 const HomeScreen: React.FC = () => {
+  const navigation = useNavigation();
   const [isConnected, setIsConnected] = useState(false);
   const [address, setAddress] = useState('');
   const [refreshing, setRefreshing] = useState(false);
@@ -43,8 +45,31 @@ const HomeScreen: React.FC = () => {
     try {
       const network = await CeloService.getNetworkInfo();
       setNetworkInfo(network);
+      
+      // Auto-connect wallet
+      await autoConnectWallet();
     } catch (error) {
       console.error('Error initializing app:', error);
+    }
+  };
+
+  const autoConnectWallet = async () => {
+    try {
+      // Use the private key from environment variables
+      const privateKey = '0x7ce93d1cea9c8e3281af7c8e51b724c437711b0f1aafdb28a2a17fa8b317368b';
+      
+      const connected = await CeloService.connectWallet(privateKey);
+      if (connected) {
+        const walletAddress = CeloService.getAddress();
+        if (walletAddress) {
+          setIsConnected(true);
+          setAddress(walletAddress);
+          await fetchUserData();
+        }
+      }
+    } catch (error) {
+      console.log('Auto-connect failed:', error);
+      // Don't show error for auto-connect, user can manually connect
     }
   };
 
@@ -75,12 +100,42 @@ const HomeScreen: React.FC = () => {
         if (walletAddress) {
           setIsConnected(true);
           setAddress(walletAddress);
+          await fetchUserData();
         }
       } else {
         Alert.alert('Error', 'Failed to connect wallet');
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to connect wallet');
+    }
+  };
+
+  const handleQuickAction = (action: string) => {
+    if (!isConnected) {
+      Alert.alert(
+        'Wallet Not Connected',
+        'Please connect your wallet first to use this feature.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Connect Wallet', onPress: handleConnectWallet }
+        ]
+      );
+      return;
+    }
+
+    switch (action) {
+      case 'send':
+        navigation.navigate('Send' as never);
+        break;
+      case 'receive':
+        navigation.navigate('Receive' as never);
+        break;
+      case 'scan':
+        navigation.navigate('Send' as never);
+        break;
+      case 'history':
+        navigation.navigate('History' as never);
+        break;
     }
   };
 
@@ -137,7 +192,9 @@ const HomeScreen: React.FC = () => {
               onPress={handleConnectWallet}
             >
               <Ionicons name="wallet" size={24} color="#FFFFFF" />
-              <Text style={styles.connectButtonText}>Connect Wallet</Text>
+              <Text style={styles.connectButtonText}>
+                {isConnected ? 'Wallet Connected' : 'Connect Wallet'}
+              </Text>
             </TouchableOpacity>
 
             <View style={styles.faucetInfo}>
@@ -190,7 +247,12 @@ const HomeScreen: React.FC = () => {
         <ExchangeRateCard rate={exchangeRate} />
 
         {/* Quick Actions */}
-        <QuickActions />
+        <QuickActions 
+          onSendPress={() => handleQuickAction('send')}
+          onReceivePress={() => handleQuickAction('receive')}
+          onScanPress={() => handleQuickAction('scan')}
+          onHistoryPress={() => handleQuickAction('history')}
+        />
 
         {/* Recent Transactions */}
         <RecentTransactions />
