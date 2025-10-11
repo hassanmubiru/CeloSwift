@@ -129,6 +129,20 @@ class CeloService {
     return this.signer?.address || null;
   }
 
+  async getCeloBalance(): Promise<string> {
+    try {
+      if (!this.signer) {
+        return '0';
+      }
+
+      const balance = await this.provider.getBalance(this.signer.address);
+      return ethers.formatEther(balance);
+    } catch (error) {
+      console.error('Failed to get CELO balance:', error);
+      return '0';
+    }
+  }
+
   async getBalance(tokenAddress: string): Promise<string> {
     try {
       if (!this.signer) {
