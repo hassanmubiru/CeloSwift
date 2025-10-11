@@ -74,34 +74,68 @@ const HomeScreen: React.FC = () => {
 
   const handleWalletConnect = async (walletType: string) => {
     try {
-      // For demo purposes, we'll simulate a successful connection
-      // In a real app, this would integrate with the actual wallet
-      Alert.alert(
-        'Wallet Connection',
-        `Connecting to ${walletType}...\n\nFor demo purposes, we'll use a test wallet. In production, this would connect to your actual ${walletType} wallet.`,
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { 
-            text: 'Continue with Demo', 
-            onPress: async () => {
-              // Use demo private key for testing
-              const demoPrivateKey = '0x7ce93d1cea9c8e3281af7c8e51b724c437711b0f1aafdb28a2a17fa8b317368b';
-              
-              const connected = await CeloService.connectWallet(demoPrivateKey);
-              if (connected) {
-                const walletAddress = CeloService.getAddress();
-                if (walletAddress) {
-                  setIsConnected(true);
-                  setAddress(walletAddress);
-                  await fetchUserData();
-                }
-              } else {
-                Alert.alert('Error', 'Failed to connect wallet');
+      if (walletType === 'metamask') {
+        Alert.alert(
+          'MetaMask Connection',
+          'To connect MetaMask:\n\n1. Install MetaMask browser extension\n2. Switch to Celo Alfajores network\n3. Return to this app and try again',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { 
+              text: 'Open MetaMask', 
+              onPress: () => {
+                // In a real app, this would trigger MetaMask connection
+                Alert.alert(
+                  'MetaMask Integration',
+                  'MetaMask integration will be available in the web version of this app. For mobile, please use WalletConnect or another mobile wallet.',
+                  [{ text: 'OK' }]
+                );
               }
             }
-          }
-        ]
-      );
+          ]
+        );
+      } else if (walletType === 'walletconnect') {
+        Alert.alert(
+          'WalletConnect',
+          'WalletConnect integration is coming soon. This will allow you to connect any WalletConnect compatible wallet.',
+          [{ text: 'OK' }]
+        );
+      } else if (walletType === 'coinbase') {
+        Alert.alert(
+          'Coinbase Wallet',
+          'To connect Coinbase Wallet:\n\n1. Install Coinbase Wallet browser extension\n2. Switch to Celo Alfajores network\n3. Return to this app and try again',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { 
+              text: 'Open Coinbase', 
+              onPress: () => {
+                Alert.alert(
+                  'Coinbase Integration',
+                  'Coinbase Wallet integration will be available in the web version of this app.',
+                  [{ text: 'OK' }]
+                );
+              }
+            }
+          ]
+        );
+      } else if (walletType === 'trust') {
+        Alert.alert(
+          'Trust Wallet',
+          'To connect Trust Wallet:\n\n1. Open Trust Wallet app on your phone\n2. Go to Settings > WalletConnect\n3. Scan the QR code that will be displayed',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { 
+              text: 'Continue', 
+              onPress: () => {
+                Alert.alert(
+                  'Trust Wallet Integration',
+                  'Trust Wallet integration via WalletConnect is coming soon.',
+                  [{ text: 'OK' }]
+                );
+              }
+            }
+          ]
+        );
+      }
     } catch (error) {
       Alert.alert('Error', 'Failed to connect wallet');
     }
@@ -203,15 +237,29 @@ const HomeScreen: React.FC = () => {
               </View>
             </TouchableOpacity>
 
-            <View style={styles.faucetInfo}>
-              <Text style={styles.faucetTitle}>Need Test Tokens?</Text>
-              <Text style={styles.faucetText}>
-                Get free test CELO and cUSD from the Alfajores faucet:
-              </Text>
-              <Text style={styles.faucetLink}>
-                https://faucet.celo.org/alfajores
-              </Text>
-            </View>
+            {!isConnected && (
+              <View style={styles.faucetInfo}>
+                <Text style={styles.faucetTitle}>Ready to Get Started?</Text>
+                <Text style={styles.faucetText}>
+                  Connect your wallet to start using CeloSwift for fast, low-cost remittances on the Celo network.
+                </Text>
+                <Text style={styles.faucetSubtext}>
+                  Supported wallets: MetaMask, WalletConnect, Coinbase Wallet, Trust Wallet
+                </Text>
+              </View>
+            )}
+
+            {isConnected && (
+              <View style={styles.faucetInfo}>
+                <Text style={styles.faucetTitle}>Need Test Tokens?</Text>
+                <Text style={styles.faucetText}>
+                  Get free test CELO and cUSD from the Alfajores faucet:
+                </Text>
+                <Text style={styles.faucetLink}>
+                  https://faucet.celo.org/alfajores
+                </Text>
+              </View>
+            )}
 
             <Text style={styles.networkInfo}>
               Connected to: {networkInfo?.name || 'Celo Alfajores'}
@@ -447,6 +495,12 @@ const styles = StyleSheet.create({
     color: '#666',
     marginBottom: 8,
     lineHeight: 20,
+  },
+  faucetSubtext: {
+    fontSize: 12,
+    color: '#35D07F',
+    fontWeight: '500',
+    marginTop: 4,
   },
   faucetLink: {
     fontSize: 12,

@@ -88,12 +88,16 @@ class CeloService {
     }
   }
 
-  async connectWallet(privateKey: string): Promise<boolean> {
+  async connectWallet(privateKey?: string): Promise<boolean> {
     try {
       this.initializeProvider();
       
       if (!this.provider) {
         throw new Error('Provider not initialized');
+      }
+
+      if (!privateKey) {
+        throw new Error('Private key is required for wallet connection');
       }
 
       this.signer = new ethers.Wallet(privateKey, this.provider);
@@ -121,6 +125,45 @@ class CeloService {
       return true;
     } catch (error) {
       console.error('Failed to connect wallet:', error);
+      return false;
+    }
+  }
+
+  // Method for connecting with external wallet providers (MetaMask, WalletConnect, etc.)
+  async connectExternalWallet(provider: any): Promise<boolean> {
+    try {
+      this.initializeProvider();
+      
+      if (!this.provider) {
+        throw new Error('Provider not initialized');
+      }
+
+      // Connect to external wallet provider
+      this.signer = await provider.getSigner();
+      
+      // Initialize contracts
+      this.remittanceContract = new ethers.Contract(
+        REMITTANCE_CONTRACT_ADDRESS,
+        REMITTANCE_ABI,
+        this.signer
+      );
+
+      this.phoneRegistryContract = new ethers.Contract(
+        PHONE_REGISTRY_ADDRESS,
+        PHONE_REGISTRY_ABI,
+        this.signer
+      );
+
+      this.kycAmlContract = new ethers.Contract(
+        KYC_AML_CONTRACT_ADDRESS,
+        KYC_AML_ABI,
+        this.signer
+      );
+
+      console.log('External wallet connected:', this.signer.address);
+      return true;
+    } catch (error) {
+      console.error('Failed to connect external wallet:', error);
       return false;
     }
   }

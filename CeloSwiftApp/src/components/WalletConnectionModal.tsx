@@ -57,41 +57,6 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   ];
 
   const handleWalletPress = (wallet: any) => {
-    if (wallet.action === 'extension') {
-      Alert.alert(
-        'Install Wallet Extension',
-        `Please install ${wallet.name} browser extension to continue.`,
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { 
-            text: 'Install', 
-            onPress: () => {
-              // Open browser to wallet's website
-              const urls: { [key: string]: string } = {
-                metamask: 'https://metamask.io/download/',
-                coinbase: 'https://www.coinbase.com/wallet',
-              };
-              if (urls[wallet.id]) {
-                Linking.openURL(urls[wallet.id]);
-              }
-            }
-          }
-        ]
-      );
-    } else if (wallet.action === 'walletconnect') {
-      Alert.alert(
-        'WalletConnect',
-        'WalletConnect integration will be available in a future update. For now, please use MetaMask or another browser wallet.',
-        [{ text: 'OK' }]
-      );
-    } else if (wallet.action === 'mobile') {
-      Alert.alert(
-        'Mobile Wallet',
-        'Please use the mobile version of your wallet app to connect.',
-        [{ text: 'OK' }]
-      );
-    }
-    
     onConnect(wallet.id);
     onClose();
   };
