@@ -8,7 +8,7 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useCelo } from '@celo/react-celo';
+import CeloService from '../services/CeloService';
 
 interface WalletConnectProps {
   onConnect?: () => void;
@@ -19,14 +19,29 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
   onConnect,
   onDisconnect,
 }) => {
-  const { address, connect, disconnect, network } = useCelo();
+  // Mock wallet state for demo
+  const [isConnected, setIsConnected] = useState(false);
+  const [address, setAddress] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const handleConnect = async () => {
     try {
-      await connect();
-      setIsModalVisible(false);
-      onConnect?.();
+      // For demo purposes, we'll use a placeholder private key
+      // In a real app, this would come from wallet connection
+      const privateKey = '0x1234567890123456789012345678901234567890123456789012345678901234';
+      
+      const connected = await CeloService.connectWallet(privateKey);
+      if (connected) {
+        const walletAddress = CeloService.getAddress();
+        if (walletAddress) {
+          setIsConnected(true);
+          setAddress(walletAddress);
+          setIsModalVisible(false);
+          onConnect?.();
+        }
+      } else {
+        Alert.alert('Error', 'Failed to connect wallet');
+      }
     } catch (error) {
       Alert.alert('Error', 'Failed to connect wallet');
     }
@@ -34,7 +49,9 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
 
   const handleDisconnect = async () => {
     try {
-      await disconnect();
+      CeloService.disconnect();
+      setIsConnected(false);
+      setAddress('');
       onDisconnect?.();
     } catch (error) {
       Alert.alert('Error', 'Failed to disconnect wallet');
@@ -46,7 +63,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
     Alert.alert('Address Copied', address);
   };
 
-  if (address) {
+  if (isConnected && address) {
     return (
       <View style={styles.connectedContainer}>
         <View style={styles.walletInfo}>
@@ -154,7 +171,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({
             <View style={styles.networkInfo}>
               <Text style={styles.networkLabel}>Network:</Text>
               <Text style={styles.networkName}>
-                {network?.name || 'Alfajores Testnet'}
+                Celo Sepolia
               </Text>
             </View>
           </View>

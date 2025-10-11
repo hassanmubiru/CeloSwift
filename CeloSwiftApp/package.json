@@ -43,6 +43,7 @@
     "@react-navigation/bottom-tabs": "^6.5.11",
     "@react-navigation/native": "^6.1.9",
     "assert": "^2.1.0",
+    "ethers": "^6.15.0",
     "expo": "~51.0.28",
     "expo-barcode-scanner": "~13.0.1",
     "expo-camera": "~15.0.16",

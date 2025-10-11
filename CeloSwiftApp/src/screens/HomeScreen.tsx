@@ -9,39 +9,56 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import CeloService from '../services/CeloService';
 import BalanceCard from '../components/BalanceCard';
 import QuickActions from '../components/QuickActions';
 import RecentTransactions from '../components/RecentTransactions';
 import ExchangeRateCard from '../components/ExchangeRateCard';
 
 const HomeScreen: React.FC = () => {
-  // Mock wallet state for demo
   const [isConnected, setIsConnected] = useState(false);
   const [address, setAddress] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [balance, setBalance] = useState('0.00');
   const [exchangeRate, setExchangeRate] = useState(1.0);
+  const [networkInfo, setNetworkInfo] = useState<any>(null);
 
-  const onRefresh = React.useCallback(() => {
+  const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
-    // Simulate API call
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 2000);
+    await fetchUserData();
+    setRefreshing(false);
+  }, []);
+
+  useEffect(() => {
+    initializeApp();
   }, []);
 
   useEffect(() => {
     if (isConnected && address) {
-      // Fetch user balance and exchange rates
       fetchUserData();
     }
   }, [isConnected, address]);
 
+  const initializeApp = async () => {
+    try {
+      const network = await CeloService.getNetworkInfo();
+      setNetworkInfo(network);
+    } catch (error) {
+      console.error('Error initializing app:', error);
+    }
+  };
+
   const fetchUserData = async () => {
     try {
-      // Mock data for demo
-      setBalance('1,250.50');
-      setExchangeRate(1.0);
+      if (isConnected && address) {
+        // Get cUSD balance
+        const cusdBalance = await CeloService.getBalance(CeloService.TOKEN_ADDRESSES.CUSD);
+        setBalance(cusdBalance);
+        
+        // Get exchange rate
+        const rate = await CeloService.getExchangeRate('USD', 'UGX');
+        setExchangeRate(rate);
+      }
     } catch (error) {
       console.error('Error fetching user data:', error);
     }
@@ -49,10 +66,20 @@ const HomeScreen: React.FC = () => {
 
   const handleConnectWallet = async () => {
     try {
-      // Mock wallet connection
-      setIsConnected(true);
-      setAddress('0x1234...5678'); // Mock address
-      setBalance('1,250.50');
+      // For demo purposes, we'll use a placeholder private key
+      // In a real app, this would come from wallet connection
+      const privateKey = '0x1234567890123456789012345678901234567890123456789012345678901234';
+      
+      const connected = await CeloService.connectWallet(privateKey);
+      if (connected) {
+        const walletAddress = CeloService.getAddress();
+        if (walletAddress) {
+          setIsConnected(true);
+          setAddress(walletAddress);
+        }
+      } else {
+        Alert.alert('Error', 'Failed to connect wallet');
+      }
     } catch (error) {
       Alert.alert('Error', 'Failed to connect wallet');
     }
@@ -60,7 +87,7 @@ const HomeScreen: React.FC = () => {
 
   const handleDisconnectWallet = async () => {
     try {
-      // Mock wallet disconnection
+      CeloService.disconnect();
       setIsConnected(false);
       setAddress('');
       setBalance('0.00');
@@ -115,7 +142,7 @@ const HomeScreen: React.FC = () => {
             </TouchableOpacity>
 
             <Text style={styles.networkInfo}>
-              Connected to: Sepolia Testnet
+              Connected to: {networkInfo?.name || 'Celo Sepolia'}
             </Text>
           </View>
         </ScrollView>
@@ -164,7 +191,7 @@ const HomeScreen: React.FC = () => {
           <View style={styles.networkIndicator}>
             <View style={[styles.networkDot, { backgroundColor: '#35D07F' }]} />
             <Text style={styles.networkText}>
-              Sepolia Testnet
+              {networkInfo?.name || 'Celo Sepolia'}
             </Text>
           </View>
         </View>

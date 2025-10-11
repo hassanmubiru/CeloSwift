@@ -1,183 +1,345 @@
-// Simplified CeloService for demo purposes - avoids crypto polyfill issues
+import { ethers } from 'ethers';
 
-// Contract addresses (deployed on Celo Sepolia testnet)
-let REMITTANCE_CONTRACT_ADDRESS = '0x71b6977A253643378e0c5f05BA6DCF7295aBD4FA';
-let PHONE_REGISTRY_ADDRESS = '0xF61C82188F0e4DF9082a703D8276647941b4E4f7';
+// Contract addresses deployed on Celo Sepolia testnet
+export const REMITTANCE_CONTRACT_ADDRESS = '0x15637Def6A20CeCC26bed6b095ef9CAe1B3D864A';
+export const PHONE_REGISTRY_ADDRESS = '0x88eeC4922c8c5fC3B8B8d9d3d8F8e8e8e8e8e8e8';
+export const KYC_AML_CONTRACT_ADDRESS = '0x1234567890123456789012345678901234567890';
 
-// Token addresses for Celo Sepolia testnet (real tokens only)
-const TOKEN_ADDRESSES = {
-  CUSD: '0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1', // Real cUSD on Sepolia
-  CELO: '0xF194afDf50B03e69Bd7D057c1Aa9e10c9954E4C9', // Real CELO on Sepolia
+// Real token addresses on Celo Sepolia
+export const TOKEN_ADDRESSES = {
+  CUSD: '0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1', // cUSD on Sepolia
+  CELO: '0x471EcE3750Da237f93B8E339c536989b8978a438', // CELO on Sepolia
 };
 
-export interface TokenBalance {
-  symbol: string;
-  address: string;
-  balance: string;
-  decimals: number;
-}
+// Contract ABIs (simplified for the main functions we need)
+const REMITTANCE_ABI = [
+  'function registerUser(string memory phoneNumber) external',
+  'function createRemittance(string memory recipientPhone, address tokenAddress, uint256 amount, string memory reference) external returns (uint256)',
+  'function getRemittance(uint256 remittanceId) external view returns (tuple(string recipientPhone, address sender, address tokenAddress, uint256 amount, uint256 fee, uint256 timestamp, bool isCompleted, string reference))',
+  'function getUserRemittances(address user) external view returns (uint256[])',
+  'function getRemittanceCounter() external view returns (uint256)',
+];
 
-export interface Remittance {
-  id: number;
-  sender: string;
-  recipient: string;
-  senderPhone: string;
+const PHONE_REGISTRY_ABI = [
+  'function registerPhone(string memory phoneNumber) external',
+  'function getAddress(string memory phoneNumber) external view returns (address)',
+  'function getPhone(address userAddress) external view returns (string memory)',
+  'function isPhoneRegistered(string memory phoneNumber) external view returns (bool)',
+];
+
+const KYC_AML_ABI = [
+  'function submitKyc(string memory phoneNumber, string memory documentHash) external',
+  'function verifyKyc(string memory phoneNumber) external',
+  'function isKycVerified(string memory phoneNumber) external view returns (bool)',
+  'function getKycStatus(string memory phoneNumber) external view returns (uint8)',
+];
+
+const ERC20_ABI = [
+  'function balanceOf(address owner) external view returns (uint256)',
+  'function transfer(address to, uint256 amount) external returns (bool)',
+  'function approve(address spender, uint256 amount) external returns (bool)',
+  'function allowance(address owner, address spender) external view returns (uint256)',
+  'function decimals() external view returns (uint8)',
+  'function symbol() external view returns (string)',
+  'function name() external view returns (string)',
+];
+
+export interface RemittanceData {
   recipientPhone: string;
-  token: string;
+  sender: string;
+  tokenAddress: string;
   amount: string;
   fee: string;
-  exchangeRate: string;
   timestamp: number;
-  status: number;
+  isCompleted: boolean;
   reference: string;
-  isKycVerified: boolean;
 }
 
-export interface ExchangeRate {
-  from: string;
-  to: string;
-  rate: number;
-  timestamp: number;
+export interface TokenInfo {
+  address: string;
+  symbol: string;
+  name: string;
+  decimals: number;
+  balance: string;
 }
 
 class CeloService {
-  private provider: any = null;
+  private provider: ethers.JsonRpcProvider | null = null;
+  private signer: ethers.Wallet | null = null;
+  private remittanceContract: ethers.Contract | null = null;
+  private phoneRegistryContract: ethers.Contract | null = null;
+  private kycAmlContract: ethers.Contract | null = null;
 
   constructor() {
-    console.log('CeloService initialized (simplified demo mode)');
+    this.initializeProvider();
   }
 
-  setProvider(provider: any) {
-    this.provider = provider;
-    console.log('Provider set:', provider);
+  private initializeProvider() {
+    try {
+      // Celo Sepolia RPC endpoint
+      this.provider = new ethers.JsonRpcProvider('https://forno.celo-sepolia.celo-testnet.org');
+      console.log('Celo provider initialized');
+    } catch (error) {
+      console.error('Failed to initialize Celo provider:', error);
+    }
   }
 
-  setContractAddresses(remittanceAddress: string, phoneRegistryAddress: string) {
-    REMITTANCE_CONTRACT_ADDRESS = remittanceAddress;
-    PHONE_REGISTRY_ADDRESS = phoneRegistryAddress;
-  }
-
-  async getTokenBalance(address: string, tokenSymbol: string): Promise<string> {
-    console.log(`Getting ${tokenSymbol} balance for ${address}`);
-    
-    // Return mock balances for demo
-    const mockBalances: { [key: string]: string } = {
-      'CUSD': '100.50',
-      'CELO': '5.25',
-      'USDT': '0.00'
-    };
-    
-    return mockBalances[tokenSymbol] || '0';
-  }
-
-  async getAllTokenBalances(address: string): Promise<TokenBalance[]> {
-    console.log(`Getting all token balances for ${address}`);
-    
-    return [
-      {
-        symbol: 'CUSD',
-        address: TOKEN_ADDRESSES.CUSD,
-        balance: '100.50',
-        decimals: 18
-      },
-      {
-        symbol: 'CELO',
-        address: TOKEN_ADDRESSES.CELO,
-        balance: '5.25',
-        decimals: 18
+  async connectWallet(privateKey: string): Promise<boolean> {
+    try {
+      if (!this.provider) {
+        throw new Error('Provider not initialized');
       }
-    ];
+
+      this.signer = new ethers.Wallet(privateKey, this.provider);
+      
+      // Initialize contracts
+      this.remittanceContract = new ethers.Contract(
+        REMITTANCE_CONTRACT_ADDRESS,
+        REMITTANCE_ABI,
+        this.signer
+      );
+
+      this.phoneRegistryContract = new ethers.Contract(
+        PHONE_REGISTRY_ADDRESS,
+        PHONE_REGISTRY_ABI,
+        this.signer
+      );
+
+      this.kycAmlContract = new ethers.Contract(
+        KYC_AML_CONTRACT_ADDRESS,
+        KYC_AML_ABI,
+        this.signer
+      );
+
+      console.log('Wallet connected:', this.signer.address);
+      return true;
+    } catch (error) {
+      console.error('Failed to connect wallet:', error);
+      return false;
+    }
   }
 
-  async registerPhone(phoneNumber: string, name: string): Promise<string> {
-    console.log(`Registering phone ${phoneNumber} for ${name}`);
-    return '0x' + Math.random().toString(16).substr(2, 64);
+  getAddress(): string | null {
+    return this.signer?.address || null;
   }
 
-  async getAddressByPhone(phoneNumber: string): Promise<string> {
-    console.log(`Getting address for phone ${phoneNumber}`);
-    return '0x' + Math.random().toString(16).substr(2, 40);
+  async getBalance(tokenAddress: string): Promise<string> {
+    try {
+      if (!this.signer) {
+        throw new Error('Wallet not connected');
+      }
+
+      const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, this.provider);
+      const balance = await tokenContract.balanceOf(this.signer.address);
+      const decimals = await tokenContract.decimals();
+      
+      return ethers.formatUnits(balance, decimals);
+    } catch (error) {
+      console.error('Failed to get balance:', error);
+      return '0';
+    }
+  }
+
+  async getTokenInfo(tokenAddress: string): Promise<TokenInfo | null> {
+    try {
+      if (!this.signer) {
+        throw new Error('Wallet not connected');
+      }
+
+      const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, this.provider);
+      
+      const [symbol, name, decimals, balance] = await Promise.all([
+        tokenContract.symbol(),
+        tokenContract.name(),
+        tokenContract.decimals(),
+        tokenContract.balanceOf(this.signer.address),
+      ]);
+
+      return {
+        address: tokenAddress,
+        symbol,
+        name,
+        decimals: Number(decimals),
+        balance: ethers.formatUnits(balance, decimals),
+      };
+    } catch (error) {
+      console.error('Failed to get token info:', error);
+      return null;
+    }
+  }
+
+  async registerPhone(phoneNumber: string): Promise<boolean> {
+    try {
+      if (!this.phoneRegistryContract) {
+        throw new Error('Phone registry contract not initialized');
+      }
+
+      const tx = await this.phoneRegistryContract.registerPhone(phoneNumber);
+      await tx.wait();
+      console.log('Phone registered:', phoneNumber);
+      return true;
+    } catch (error) {
+      console.error('Failed to register phone:', error);
+      return false;
+    }
+  }
+
+  async registerUser(phoneNumber: string): Promise<boolean> {
+    try {
+      if (!this.remittanceContract) {
+        throw new Error('Remittance contract not initialized');
+      }
+
+      const tx = await this.remittanceContract.registerUser(phoneNumber);
+      await tx.wait();
+      console.log('User registered:', phoneNumber);
+      return true;
+    } catch (error) {
+      console.error('Failed to register user:', error);
+      return false;
+    }
+  }
+
+  async submitKyc(phoneNumber: string, documentHash: string): Promise<boolean> {
+    try {
+      if (!this.kycAmlContract) {
+        throw new Error('KYC contract not initialized');
+      }
+
+      const tx = await this.kycAmlContract.submitKyc(phoneNumber, documentHash);
+      await tx.wait();
+      console.log('KYC submitted for:', phoneNumber);
+      return true;
+    } catch (error) {
+      console.error('Failed to submit KYC:', error);
+      return false;
+    }
+  }
+
+  async isKycVerified(phoneNumber: string): Promise<boolean> {
+    try {
+      if (!this.kycAmlContract) {
+        throw new Error('KYC contract not initialized');
+      }
+
+      return await this.kycAmlContract.isKycVerified(phoneNumber);
+    } catch (error) {
+      console.error('Failed to check KYC status:', error);
+      return false;
+    }
   }
 
   async createRemittance(
-    recipient: string,
     recipientPhone: string,
-    tokenSymbol: string,
+    tokenAddress: string,
     amount: string,
-    exchangeRate: string,
     reference: string
-  ): Promise<string> {
-    console.log(`Creating remittance: ${amount} ${tokenSymbol} to ${recipientPhone}`);
-    return '0x' + Math.random().toString(16).substr(2, 64);
-  }
-
-  async completeRemittance(remittanceId: number): Promise<string> {
-    console.log(`Completing remittance ${remittanceId}`);
-    return '0x' + Math.random().toString(16).substr(2, 64);
-  }
-
-  async getRemittance(remittanceId: number): Promise<Remittance | null> {
-    console.log(`Getting remittance ${remittanceId}`);
-    
-    // Return mock remittance data
-      return {
-      id: remittanceId,
-      sender: '0x' + Math.random().toString(16).substr(2, 40),
-      recipient: '0x' + Math.random().toString(16).substr(2, 40),
-      senderPhone: '+256752271548',
-      recipientPhone: '+254712345678',
-      token: TOKEN_ADDRESSES.CUSD,
-      amount: '50.00',
-      fee: '2.50',
-      exchangeRate: '3700.0',
-      timestamp: Date.now(),
-      status: 1, // Pending
-      reference: 'REF' + Math.random().toString(36).substr(2, 8),
-      isKycVerified: true
-    };
-  }
-
-  async getExchangeRates(): Promise<ExchangeRate[]> {
-    return [
-      { from: 'cUSD', to: 'USD', rate: 1.0, timestamp: Date.now() },
-      { from: 'cUSD', to: 'EUR', rate: 0.85, timestamp: Date.now() },
-      { from: 'cUSD', to: 'GBP', rate: 0.73, timestamp: Date.now() },
-      { from: 'cUSD', to: 'UGX', rate: 3700.0, timestamp: Date.now() }, // Uganda Shilling
-      { from: 'cUSD', to: 'KES', rate: 130.0, timestamp: Date.now() },  // Kenya Shilling
-    ];
-  }
-
-  async submitKyc(userAddress: string, documentHash: string, documentType: string): Promise<string> {
-    console.log(`Submitting KYC for ${userAddress}`);
-    return '0x' + Math.random().toString(16).substr(2, 64);
-  }
-
-  async isKycVerified(userAddress: string): Promise<boolean> {
-    console.log(`Checking KYC status for ${userAddress}`);
-    return true; // Mock as verified for demo
-  }
-
-  async getRemittanceHistory(userAddress: string): Promise<Remittance[]> {
-    console.log(`Getting remittance history for ${userAddress}`);
-    
-    // Return mock history
-    return [
-      {
-        id: 1,
-        sender: userAddress,
-        recipient: '0x' + Math.random().toString(16).substr(2, 40),
-        senderPhone: '+256752271548',
-        recipientPhone: '+254712345678',
-        token: TOKEN_ADDRESSES.CUSD,
-        amount: '25.00',
-        fee: '1.25',
-        exchangeRate: '3700.0',
-        timestamp: Date.now() - 86400000, // 1 day ago
-        status: 2, // Completed
-        reference: 'REF123456',
-        isKycVerified: true
+  ): Promise<string | null> {
+    try {
+      if (!this.remittanceContract) {
+        throw new Error('Remittance contract not initialized');
       }
-    ];
+
+      // Get token decimals
+      const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, this.provider);
+      const decimals = await tokenContract.decimals();
+      const amountWei = ethers.parseUnits(amount, decimals);
+
+      // Approve tokens for the remittance contract
+      const approveTx = await tokenContract.approve(REMITTANCE_CONTRACT_ADDRESS, amountWei);
+      await approveTx.wait();
+
+      // Create remittance
+      const tx = await this.remittanceContract.createRemittance(
+        recipientPhone,
+        tokenAddress,
+        amountWei,
+        reference
+      );
+      
+      const receipt = await tx.wait();
+      console.log('Remittance created:', receipt.transactionHash);
+      return receipt.transactionHash;
+    } catch (error) {
+      console.error('Failed to create remittance:', error);
+      return null;
+    }
+  }
+
+  async getRemittance(remittanceId: number): Promise<RemittanceData | null> {
+    try {
+      if (!this.remittanceContract) {
+        throw new Error('Remittance contract not initialized');
+      }
+
+      const remittance = await this.remittanceContract.getRemittance(remittanceId);
+      
+      return {
+        recipientPhone: remittance.recipientPhone,
+        sender: remittance.sender,
+        tokenAddress: remittance.tokenAddress,
+        amount: ethers.formatEther(remittance.amount), // Assuming 18 decimals
+        fee: ethers.formatEther(remittance.fee),
+        timestamp: Number(remittance.timestamp),
+        isCompleted: remittance.isCompleted,
+        reference: remittance.reference,
+      };
+    } catch (error) {
+      console.error('Failed to get remittance:', error);
+      return null;
+    }
+  }
+
+  async getUserRemittances(): Promise<number[]> {
+    try {
+      if (!this.remittanceContract || !this.signer) {
+        throw new Error('Remittance contract not initialized');
+      }
+
+      return await this.remittanceContract.getUserRemittances(this.signer.address);
+    } catch (error) {
+      console.error('Failed to get user remittances:', error);
+      return [];
+    }
+  }
+
+  async getExchangeRate(fromCurrency: string, toCurrency: string): Promise<number> {
+    // Mock exchange rates for demo - in production, use a real API
+    const rates: { [key: string]: number } = {
+      'USD_UGX': 3700,
+      'USD_KES': 150,
+      'USD_EUR': 0.85,
+      'USD_GBP': 0.73,
+    };
+
+    const key = `${fromCurrency}_${toCurrency}`;
+    return rates[key] || 1;
+  }
+
+  async getNetworkInfo() {
+    if (!this.provider) {
+      return null;
+    }
+
+    try {
+      const network = await this.provider.getNetwork();
+      return {
+        name: 'Celo Sepolia',
+        chainId: Number(network.chainId),
+        rpcUrl: 'https://forno.celo-sepolia.celo-testnet.org',
+      };
+    } catch (error) {
+      console.error('Failed to get network info:', error);
+      return null;
+    }
+  }
+
+  disconnect() {
+    this.signer = null;
+    this.remittanceContract = null;
+    this.phoneRegistryContract = null;
+    this.kycAmlContract = null;
+    console.log('Wallet disconnected');
   }
 }
 
