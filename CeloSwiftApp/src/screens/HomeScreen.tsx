@@ -23,6 +23,8 @@ import WalletInstructions from '../components/WalletInstructions';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import LoadingSpinner from '../components/LoadingSpinner';
+import Header from '../components/Header';
+import StatusIndicator from '../components/StatusIndicator';
 import { theme } from '../styles/theme';
 
 const HomeScreen: React.FC = () => {
@@ -153,19 +155,19 @@ const HomeScreen: React.FC = () => {
 
             <View style={styles.featuresContainer}>
               <View style={styles.featureItem}>
-                <Ionicons name="speedometer" size={24} color="#35D07F" />
+                <Ionicons name="speedometer" size={24} color={theme.colors.primary} />
                 <Text style={styles.featureText}>Ultra-fast transfers</Text>
               </View>
               <View style={styles.featureItem}>
-                <Ionicons name="cash" size={24} color="#35D07F" />
+                <Ionicons name="cash" size={24} color={theme.colors.primary} />
                 <Text style={styles.featureText}>Minimal fees</Text>
               </View>
               <View style={styles.featureItem}>
-                <Ionicons name="globe" size={24} color="#35D07F" />
+                <Ionicons name="globe" size={24} color={theme.colors.primary} />
                 <Text style={styles.featureText}>Global reach</Text>
               </View>
               <View style={styles.featureItem}>
-                <Ionicons name="shield-checkmark" size={24} color="#35D07F" />
+                <Ionicons name="shield-checkmark" size={24} color={theme.colors.primary} />
                 <Text style={styles.featureText}>Secure & compliant</Text>
               </View>
             </View>
@@ -303,8 +305,8 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   scrollContent: {
-    padding: 16,
-    paddingBottom: 32,
+    padding: theme.spacing.lg,
+    paddingBottom: theme.spacing['2xl'],
   },
   welcomeContainer: {
     flex: 1,
@@ -317,33 +319,33 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   appName: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#1C1C1E',
-    marginTop: 16,
-    marginBottom: 8,
+    fontSize: theme.typography.fontSize['4xl'],
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text.primary,
+    marginTop: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
   },
   tagline: {
-    fontSize: 16,
-    color: '#8E8E93',
+    fontSize: theme.typography.fontSize.base,
+    color: theme.colors.text.secondary,
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: theme.typography.lineHeight.relaxed * theme.typography.fontSize.base,
   },
   featuresContainer: {
     width: '100%',
-    marginBottom: 40,
+    marginBottom: theme.spacing['2xl'],
   },
   featureItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
-    paddingHorizontal: 20,
+    marginBottom: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
   },
   featureText: {
-    fontSize: 16,
-    color: '#1C1C1E',
-    marginLeft: 12,
-    fontWeight: '500',
+    fontSize: theme.typography.fontSize.base,
+    color: theme.colors.text.primary,
+    marginLeft: theme.spacing.md,
+    fontWeight: theme.typography.fontWeight.medium,
   },
   connectButton: {
     marginBottom: theme.spacing.lg,
@@ -436,34 +438,35 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   faucetInfo: {
-    backgroundColor: '#F0F9FF',
-    padding: 16,
-    borderRadius: 12,
-    marginTop: 20,
+    backgroundColor: theme.colors.surface,
+    padding: theme.spacing.lg,
+    borderRadius: theme.borderRadius.lg,
+    marginTop: theme.spacing.lg,
     borderLeftWidth: 4,
-    borderLeftColor: '#35D07F',
+    borderLeftColor: theme.colors.primary,
+    ...theme.shadows.sm,
   },
   faucetTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1C1C1E',
-    marginBottom: 8,
+    fontSize: theme.typography.fontSize.base,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text.primary,
+    marginBottom: theme.spacing.sm,
   },
   faucetText: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 8,
-    lineHeight: 20,
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.text.secondary,
+    marginBottom: theme.spacing.sm,
+    lineHeight: theme.typography.lineHeight.relaxed * theme.typography.fontSize.sm,
   },
   faucetSubtext: {
-    fontSize: 12,
-    color: '#35D07F',
-    fontWeight: '500',
-    marginTop: 4,
+    fontSize: theme.typography.fontSize.xs,
+    color: theme.colors.primary,
+    fontWeight: theme.typography.fontWeight.medium,
+    marginTop: theme.spacing.xs,
   },
   faucetLink: {
-    fontSize: 12,
-    color: '#35D07F',
+    fontSize: theme.typography.fontSize.xs,
+    color: theme.colors.primary,
     fontFamily: 'monospace',
     textDecorationLine: 'underline',
   },
