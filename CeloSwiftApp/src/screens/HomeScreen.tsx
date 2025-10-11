@@ -170,24 +170,22 @@ const HomeScreen: React.FC = () => {
               </View>
             </View>
 
-            <TouchableOpacity
-              style={styles.connectButton}
+            <Button
+              title={isConnected ? 'Wallet Connected' : 'Connect Wallet'}
               onPress={handleConnectWallet}
-            >
-              <View style={styles.connectButtonContent}>
-                <Ionicons name="wallet" size={24} color="#FFFFFF" />
-                <View style={styles.connectButtonTextContainer}>
-                  <Text style={styles.connectButtonText}>
-                    {isConnected ? 'Wallet Connected' : 'Connect Wallet'}
-                  </Text>
-                  {!isConnected && (
-                    <Text style={styles.connectButtonSubtext}>
-                      MetaMask, WalletConnect & more
-                    </Text>
-                  )}
-                </View>
-              </View>
-            </TouchableOpacity>
+              variant="primary"
+              size="large"
+              fullWidth
+              loading={isLoading}
+              icon="wallet"
+              style={styles.connectButton}
+            />
+            
+            {!isConnected && !isLoading && (
+              <Text style={styles.connectSubtext}>
+                MetaMask, WalletConnect & more
+              </Text>
+            )}
 
             {!isConnected && (
               <View style={styles.faucetInfo}>
@@ -302,7 +300,7 @@ const HomeScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: theme.colors.background,
   },
   scrollContent: {
     padding: 16,
@@ -348,21 +346,15 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   connectButton: {
-    backgroundColor: '#35D07F',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 25,
-    marginBottom: 20,
-    shadowColor: '#35D07F',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    marginBottom: theme.spacing.lg,
+    ...theme.shadows.lg,
+  },
+  connectSubtext: {
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.text.secondary,
+    textAlign: 'center',
+    marginTop: theme.spacing.sm,
+    marginBottom: theme.spacing.lg,
   },
   connectButtonContent: {
     flexDirection: 'row',
