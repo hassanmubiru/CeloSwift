@@ -9,15 +9,15 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useCelo } from '@celo/react-celo';
-import WalletConnect from '../components/WalletConnect';
 import BalanceCard from '../components/BalanceCard';
 import QuickActions from '../components/QuickActions';
 import RecentTransactions from '../components/RecentTransactions';
 import ExchangeRateCard from '../components/ExchangeRateCard';
 
 const HomeScreen: React.FC = () => {
-  const { address, connect, disconnect, network } = useCelo();
+  // Mock wallet state for demo
+  const [isConnected, setIsConnected] = useState(false);
+  const [address, setAddress] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [balance, setBalance] = useState('0.00');
   const [exchangeRate, setExchangeRate] = useState(1.0);

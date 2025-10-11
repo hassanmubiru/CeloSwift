@@ -120,7 +120,7 @@ class CeloService {
     console.log(`Getting remittance ${remittanceId}`);
     
     // Return mock remittance data
-    return {
+      return {
       id: remittanceId,
       sender: '0x' + Math.random().toString(16).substr(2, 40),
       recipient: '0x' + Math.random().toString(16).substr(2, 40),
