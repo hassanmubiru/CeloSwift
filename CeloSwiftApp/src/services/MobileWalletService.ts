@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
 import { Alert, Linking, Platform } from 'react-native';
+import WalletConnectService from './WalletConnectService';
 
 interface MobileWalletInfo {
   id: string;
@@ -101,18 +102,22 @@ class MobileWalletService {
       const isInstalled = await this.checkWalletInstalled(metamaskWallet.deepLink);
       
       if (isInstalled) {
-        // Open MetaMask app
-        await Linking.openURL(metamaskWallet.deepLink);
-        
-        // Show instructions for manual connection
-        Alert.alert(
-          'Connect to MetaMask',
-          'MetaMask app has been opened. Please:\n\n1. Open MetaMask app\n2. Go to Settings > Advanced > Developer Options\n3. Enable "Custom RPC"\n4. Add Celo Alfajores network:\n   - Network Name: Celo Alfajores\n   - RPC URL: https://alfajores-forno.celo-testnet.org\n   - Chain ID: 44787\n   - Currency Symbol: CELO\n\n5. Return to this app and try connecting again',
-          [
-            { text: 'OK', onPress: () => this.handleManualConnection('metamask') }
-          ]
-        );
-        return true;
+        // Use WalletConnect service for connection
+        const success = await WalletConnectService.connectMetaMask();
+        if (success) {
+          // Check if we actually connected
+          const connectionStatus = WalletConnectService.getConnectionStatus();
+          if (connectionStatus.connected) {
+            this.connectedWallet = {
+              provider: connectionStatus.provider,
+              signer: connectionStatus.signer,
+              address: connectionStatus.address,
+              walletType: connectionStatus.walletType,
+            };
+            return true;
+          }
+        }
+        return false;
       } else {
         // Show install option
         this.showInstallOption(metamaskWallet);
@@ -134,17 +139,22 @@ class MobileWalletService {
       const isInstalled = await this.checkWalletInstalled(trustWallet.deepLink);
       
       if (isInstalled) {
-        // Open Trust Wallet app
-        await Linking.openURL(trustWallet.deepLink);
-        
-        Alert.alert(
-          'Connect to Trust Wallet',
-          'Trust Wallet app has been opened. Please:\n\n1. Open Trust Wallet app\n2. Go to Settings > Networks\n3. Add Celo Alfajores network\n4. Return to this app and try connecting again',
-          [
-            { text: 'OK', onPress: () => this.handleManualConnection('trust') }
-          ]
-        );
-        return true;
+        // Use WalletConnect service for connection
+        const success = await WalletConnectService.connectTrustWallet();
+        if (success) {
+          // Check if we actually connected
+          const connectionStatus = WalletConnectService.getConnectionStatus();
+          if (connectionStatus.connected) {
+            this.connectedWallet = {
+              provider: connectionStatus.provider,
+              signer: connectionStatus.signer,
+              address: connectionStatus.address,
+              walletType: connectionStatus.walletType,
+            };
+            return true;
+          }
+        }
+        return false;
       } else {
         this.showInstallOption(trustWallet);
         return false;
@@ -165,16 +175,22 @@ class MobileWalletService {
       const isInstalled = await this.checkWalletInstalled(coinbaseWallet.deepLink);
       
       if (isInstalled) {
-        await Linking.openURL(coinbaseWallet.deepLink);
-        
-        Alert.alert(
-          'Connect to Coinbase Wallet',
-          'Coinbase Wallet app has been opened. Please add Celo Alfajores network and return to this app.',
-          [
-            { text: 'OK', onPress: () => this.handleManualConnection('coinbase') }
-          ]
-        );
-        return true;
+        // Use WalletConnect service for connection
+        const success = await WalletConnectService.connectCoinbaseWallet();
+        if (success) {
+          // Check if we actually connected
+          const connectionStatus = WalletConnectService.getConnectionStatus();
+          if (connectionStatus.connected) {
+            this.connectedWallet = {
+              provider: connectionStatus.provider,
+              signer: connectionStatus.signer,
+              address: connectionStatus.address,
+              walletType: connectionStatus.walletType,
+            };
+            return true;
+          }
+        }
+        return false;
       } else {
         this.showInstallOption(coinbaseWallet);
         return false;
