@@ -9,7 +9,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import CeloService from '../services/CeloService';
+import CeloService, { TOKEN_ADDRESSES } from '../services/CeloService';
 import BalanceCard from '../components/BalanceCard';
 import QuickActions from '../components/QuickActions';
 import RecentTransactions from '../components/RecentTransactions';
@@ -52,7 +52,7 @@ const HomeScreen: React.FC = () => {
     try {
       if (isConnected && address) {
         // Get cUSD balance
-        const cusdBalance = await CeloService.getBalance(CeloService.TOKEN_ADDRESSES.CUSD);
+        const cusdBalance = await CeloService.getBalance(TOKEN_ADDRESSES.CUSD);
         setBalance(cusdBalance);
         
         // Get exchange rate

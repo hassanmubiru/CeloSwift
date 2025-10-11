@@ -10,7 +10,7 @@ import {
   Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import CeloService from '../services/CeloService';
+import CeloService, { TOKEN_ADDRESSES } from '../services/CeloService';
 import QRCodeScanner from '../components/QRCodeScanner';
 
 const SendScreen: React.FC = () => {
@@ -23,8 +23,8 @@ const SendScreen: React.FC = () => {
   const [tokenBalances, setTokenBalances] = useState<{[key: string]: string}>({});
 
   const tokens = [
-    { symbol: 'cUSD', name: 'Celo USD', address: CeloService.TOKEN_ADDRESSES.CUSD, balance: tokenBalances.cUSD || '0.00' },
-    { symbol: 'CELO', name: 'Celo Native', address: CeloService.TOKEN_ADDRESSES.CELO, balance: tokenBalances.CELO || '0.00' },
+    { symbol: 'cUSD', name: 'Celo USD', address: TOKEN_ADDRESSES.CUSD, balance: tokenBalances.cUSD || '0.00' },
+    { symbol: 'CELO', name: 'Celo Native', address: TOKEN_ADDRESSES.CELO, balance: tokenBalances.CELO || '0.00' },
   ];
 
   useEffect(() => {
