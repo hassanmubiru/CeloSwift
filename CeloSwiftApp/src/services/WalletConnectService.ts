@@ -140,6 +140,10 @@ class WalletConnectService {
             { 
               text: 'Open Coinbase Wallet', 
               onPress: () => this.openCoinbaseWalletApp()
+            },
+            { 
+              text: 'Simulate Connection', 
+              onPress: () => this.simulateConnection('coinbase')
             }
           ]
         );
