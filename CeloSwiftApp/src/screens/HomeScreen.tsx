@@ -15,6 +15,7 @@ import BalanceCard from '../components/BalanceCard';
 import QuickActions from '../components/QuickActions';
 import RecentTransactions from '../components/RecentTransactions';
 import ExchangeRateCard from '../components/ExchangeRateCard';
+import WalletConnectionModal from '../components/WalletConnectionModal';
 
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation();
