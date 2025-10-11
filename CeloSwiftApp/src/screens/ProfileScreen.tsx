@@ -16,10 +16,23 @@ const ProfileScreen: React.FC = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   const [kycStatus, setKycStatus] = useState<'pending' | 'verified' | 'rejected'>('pending');
+  const [network, setNetwork] = useState<any>(null);
 
   useEffect(() => {
     const walletAddress = CeloService.getAddress();
     setAddress(walletAddress);
+    
+    // Fetch network info
+    const fetchNetworkInfo = async () => {
+      try {
+        const networkInfo = await CeloService.getNetworkInfo();
+        setNetwork(networkInfo);
+      } catch (error) {
+        console.error('Failed to fetch network info:', error);
+      }
+    };
+    
+    fetchNetworkInfo();
   }, []);
 
   const handleDisconnect = () => {

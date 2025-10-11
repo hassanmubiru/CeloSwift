@@ -5,10 +5,10 @@ export const REMITTANCE_CONTRACT_ADDRESS = '0x15637Def6A20CeCC26bed6b095ef9CAe1B
 export const PHONE_REGISTRY_ADDRESS = '0x88eeC4922c8c5fC3B8B8d9d3d8F8e8e8e8e8e8e8';
 export const KYC_AML_CONTRACT_ADDRESS = '0x1234567890123456789012345678901234567890';
 
-// Real token addresses on Celo Sepolia
+// Real token addresses on Celo Alfajores
 export const TOKEN_ADDRESSES = {
-  CUSD: '0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1', // cUSD on Sepolia
-  CELO: '0x471EcE3750Da237f93B8E339c536989b8978a438', // CELO on Sepolia
+  CUSD: '0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1', // cUSD on Alfajores
+  CELO: '0xF194afDf50B03a69Ef7D2963f2DbD14d94249C6', // CELO on Alfajores
 };
 
 // Contract ABIs (simplified for the main functions we need)
