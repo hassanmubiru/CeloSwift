@@ -132,7 +132,8 @@ class CeloService {
   async getBalance(tokenAddress: string): Promise<string> {
     try {
       if (!this.signer) {
-        throw new Error('Wallet not connected');
+        console.warn('Wallet not connected, returning 0 balance');
+        return '0';
       }
 
       const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, this.provider);
@@ -249,14 +250,26 @@ class CeloService {
     reference: string
   ): Promise<string | null> {
     try {
-      if (!this.remittanceContract) {
-        throw new Error('Remittance contract not initialized');
+      if (!this.remittanceContract || !this.signer) {
+        throw new Error('Wallet or contract not initialized');
+      }
+
+      // Check if wallet has sufficient CELO for gas
+      const celoBalance = await this.provider.getBalance(this.signer.address);
+      if (celoBalance === 0n) {
+        throw new Error('Insufficient CELO for gas fees. Please get test CELO from the Alfajores faucet.');
       }
 
       // Get token decimals
       const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, this.signer);
       const decimals = await tokenContract.decimals();
       const amountWei = ethers.parseUnits(amount, decimals);
+
+      // Check token balance
+      const tokenBalance = await tokenContract.balanceOf(this.signer.address);
+      if (tokenBalance < amountWei) {
+        throw new Error('Insufficient token balance for this transaction');
+      }
 
       // Approve tokens for the remittance contract
       const approveTx = await tokenContract.approve(REMITTANCE_CONTRACT_ADDRESS, amountWei);
@@ -275,7 +288,7 @@ class CeloService {
       return receipt.transactionHash;
     } catch (error) {
       console.error('Failed to create remittance:', error);
-      return null;
+      throw error; // Re-throw to show proper error message
     }
   }
 
@@ -345,7 +358,12 @@ class CeloService {
       };
     } catch (error) {
       console.error('Failed to get network info:', error);
-      return null;
+      // Return default network info if provider fails
+      return {
+        name: 'Celo Alfajores',
+        chainId: 44787,
+        rpcUrl: 'https://alfajores-forno.celo-testnet.org',
+      };
     }
   }
 
