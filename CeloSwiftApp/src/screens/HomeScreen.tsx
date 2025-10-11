@@ -341,6 +341,32 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
     fontWeight: '500',
   },
+  faucetInfo: {
+    backgroundColor: '#F0F9FF',
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: '#35D07F',
+  },
+  faucetTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1C1C1E',
+    marginBottom: 8,
+  },
+  faucetText: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 8,
+    lineHeight: 20,
+  },
+  faucetLink: {
+    fontSize: 12,
+    color: '#35D07F',
+    fontFamily: 'monospace',
+    textDecorationLine: 'underline',
+  },
 });
 
 export default HomeScreen;
