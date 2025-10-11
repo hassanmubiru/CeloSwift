@@ -140,8 +140,18 @@ const HomeScreen: React.FC = () => {
               <Text style={styles.connectButtonText}>Connect Wallet</Text>
             </TouchableOpacity>
 
+            <View style={styles.faucetInfo}>
+              <Text style={styles.faucetTitle}>Need Test Tokens?</Text>
+              <Text style={styles.faucetText}>
+                Get free test CELO and cUSD from the Alfajores faucet:
+              </Text>
+              <Text style={styles.faucetLink}>
+                https://faucet.celo.org/alfajores
+              </Text>
+            </View>
+
             <Text style={styles.networkInfo}>
-              Connected to: {networkInfo?.name || 'Celo Sepolia'}
+              Connected to: {networkInfo?.name || 'Celo Alfajores'}
             </Text>
           </View>
         </ScrollView>
