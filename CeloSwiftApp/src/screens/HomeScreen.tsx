@@ -8,9 +8,11 @@ import {
   Alert,
   RefreshControl,
   Modal,
+  StatusBar,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 import CeloService, { TOKEN_ADDRESSES } from '../services/CeloService';
 import BalanceCard from '../components/BalanceCard';
 import QuickActions from '../components/QuickActions';
@@ -18,6 +20,10 @@ import RecentTransactions from '../components/RecentTransactions';
 import ExchangeRateCard from '../components/ExchangeRateCard';
 import WalletConnectionModal from '../components/WalletConnectionModal';
 import WalletInstructions from '../components/WalletInstructions';
+import Button from '../components/Button';
+import Card from '../components/Card';
+import LoadingSpinner from '../components/LoadingSpinner';
+import { theme } from '../styles/theme';
 
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation();
