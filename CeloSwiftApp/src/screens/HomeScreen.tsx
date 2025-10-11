@@ -36,6 +36,7 @@ const HomeScreen: React.FC = () => {
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
   const [selectedWallet, setSelectedWallet] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
@@ -79,7 +80,12 @@ const HomeScreen: React.FC = () => {
   };
 
   const handleConnectWallet = () => {
-    setShowWalletModal(true);
+    setIsLoading(true);
+    // Simulate a brief loading state for better UX
+    setTimeout(() => {
+      setIsLoading(false);
+      setShowWalletModal(true);
+    }, 300);
   };
 
   const handleWalletConnect = async (walletType: string) => {
