@@ -31,15 +31,15 @@ const HomeScreen: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (address) {
+    if (isConnected && address) {
       // Fetch user balance and exchange rates
       fetchUserData();
     }
-  }, [address]);
+  }, [isConnected, address]);
 
   const fetchUserData = async () => {
     try {
-      // In a real app, this would fetch from your backend/contracts
+      // Mock data for demo
       setBalance('1,250.50');
       setExchangeRate(1.0);
     } catch (error) {
@@ -49,7 +49,10 @@ const HomeScreen: React.FC = () => {
 
   const handleConnectWallet = async () => {
     try {
-      await connect();
+      // Mock wallet connection
+      setIsConnected(true);
+      setAddress('0x1234...5678'); // Mock address
+      setBalance('1,250.50');
     } catch (error) {
       Alert.alert('Error', 'Failed to connect wallet');
     }
@@ -57,13 +60,16 @@ const HomeScreen: React.FC = () => {
 
   const handleDisconnectWallet = async () => {
     try {
-      await disconnect();
+      // Mock wallet disconnection
+      setIsConnected(false);
+      setAddress('');
+      setBalance('0.00');
     } catch (error) {
       Alert.alert('Error', 'Failed to disconnect wallet');
     }
   };
 
-  if (!address) {
+  if (!isConnected) {
     return (
       <View style={styles.container}>
         <ScrollView
