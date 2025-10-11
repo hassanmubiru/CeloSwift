@@ -76,8 +76,8 @@ class CeloService {
 
   private initializeProvider() {
     try {
-      // Celo Sepolia RPC endpoint
-      this.provider = new ethers.JsonRpcProvider('https://forno.celo-sepolia.celo-testnet.org');
+      // Celo Alfajores RPC endpoint (matching deployed contracts)
+      this.provider = new ethers.JsonRpcProvider('https://alfajores-forno.celo-testnet.org');
       console.log('Celo provider initialized');
     } catch (error) {
       console.error('Failed to initialize Celo provider:', error);
@@ -324,9 +324,9 @@ class CeloService {
     try {
       const network = await this.provider.getNetwork();
       return {
-        name: 'Celo Sepolia',
+        name: 'Celo Alfajores',
         chainId: Number(network.chainId),
-        rpcUrl: 'https://forno.celo-sepolia.celo-testnet.org',
+        rpcUrl: 'https://alfajores-forno.celo-testnet.org',
       };
     } catch (error) {
       console.error('Failed to get network info:', error);

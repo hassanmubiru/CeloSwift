@@ -11,6 +11,7 @@ config.resolver.alias = {
   assert: 'assert',
   os: 'os-browserify/browser',
   path: 'path-browserify',
+  url: 'react-native-url-polyfill',
   fs: false,
   net: false,
   tls: false,
