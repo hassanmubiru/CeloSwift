@@ -11,6 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import WalletDetectionService, { WalletInfo } from '../services/WalletDetectionService';
 import Web3ProviderService from '../services/Web3ProviderService';
+import MobileWalletService from '../services/MobileWalletService';
 
 interface WalletConnectionModalProps {
   visible: boolean;
@@ -46,10 +47,10 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
 
   const handleWalletPress = async (wallet: WalletInfo) => {
     if (wallet.installed) {
-      // Wallet is installed, try to connect directly
+      // Wallet is installed, try to connect using mobile service
       if (wallet.id === 'metamask') {
         try {
-          const success = await Web3ProviderService.connectMetaMask();
+          const success = await MobileWalletService.connectMetaMask();
           if (success) {
             onConnect(wallet.id);
             onClose();
@@ -59,13 +60,23 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         }
       } else if (wallet.id === 'coinbase') {
         try {
-          const success = await Web3ProviderService.connectCoinbaseWallet();
+          const success = await MobileWalletService.connectCoinbaseWallet();
           if (success) {
             onConnect(wallet.id);
             onClose();
           }
         } catch (error) {
           console.error('Coinbase Wallet connection failed:', error);
+        }
+      } else if (wallet.id === 'trust') {
+        try {
+          const success = await MobileWalletService.connectTrustWallet();
+          if (success) {
+            onConnect(wallet.id);
+            onClose();
+          }
+        } catch (error) {
+          console.error('Trust Wallet connection failed:', error);
         }
       } else {
         // For other wallets, just trigger the connection flow

@@ -15,6 +15,7 @@ import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import CeloService, { TOKEN_ADDRESSES } from '../services/CeloService';
 import Web3ProviderService from '../services/Web3ProviderService';
+import MobileWalletService from '../services/MobileWalletService';
 import BalanceCard from '../components/BalanceCard';
 import QuickActions from '../components/QuickActions';
 import RecentTransactions from '../components/RecentTransactions';
@@ -62,11 +63,11 @@ const HomeScreen: React.FC = () => {
       const network = await CeloService.getNetworkInfo();
       setNetworkInfo(network);
       
-      // Check if we're already connected to a web3 wallet
-      const connectionStatus = Web3ProviderService.getConnectionStatus();
-      if (connectionStatus.connected && connectionStatus.address) {
+      // Check if we're already connected to a mobile wallet
+      const mobileConnectionStatus = MobileWalletService.getConnectionStatus();
+      if (mobileConnectionStatus.connected && mobileConnectionStatus.address) {
         setIsConnected(true);
-        setAddress(connectionStatus.address);
+        setAddress(mobileConnectionStatus.address);
         await fetchUserData();
       }
     } catch (error) {
@@ -100,18 +101,18 @@ const HomeScreen: React.FC = () => {
   };
 
   const handleWalletConnect = async (walletType: string) => {
-    if (walletType === 'metamask' || walletType === 'coinbase') {
-      // Check if we actually connected
-      const connectionStatus = Web3ProviderService.getConnectionStatus();
+    if (walletType === 'metamask' || walletType === 'coinbase' || walletType === 'trust') {
+      // Check if we actually connected using mobile service
+      const connectionStatus = MobileWalletService.getConnectionStatus();
       
       if (connectionStatus.connected && connectionStatus.address) {
         // Successfully connected
         setIsConnected(true);
         setAddress(connectionStatus.address);
         
-        // Update CeloService with the web3 provider
+        // Update CeloService with the mobile wallet provider
         if (connectionStatus.provider && connectionStatus.signer) {
-          // Use the web3 provider for Celo operations
+          // Use the mobile wallet provider for Celo operations
           await CeloService.connectExternalWallet(connectionStatus.provider);
         }
         
@@ -120,15 +121,12 @@ const HomeScreen: React.FC = () => {
         
         Alert.alert(
           'Wallet Connected Successfully!',
-          `Connected to ${walletType === 'metamask' ? 'MetaMask' : 'Coinbase Wallet'}\nAddress: ${connectionStatus.address.slice(0, 6)}...${connectionStatus.address.slice(-4)}`,
+          `Connected to ${connectionStatus.walletType}\nAddress: ${connectionStatus.address.slice(0, 6)}...${connectionStatus.address.slice(-4)}`,
           [{ text: 'OK' }]
         );
       } else {
-        Alert.alert(
-          'Connection Failed',
-          `Failed to connect to ${walletType === 'metamask' ? 'MetaMask' : 'Coinbase Wallet'}. Please try again.`,
-          [{ text: 'OK' }]
-        );
+        // Connection is in progress, don't show error yet
+        console.log('Wallet connection in progress...');
       }
     } else {
       // For other wallets, show instructions
@@ -168,6 +166,7 @@ const HomeScreen: React.FC = () => {
 
   const handleDisconnectWallet = async () => {
     try {
+      MobileWalletService.disconnect();
       Web3ProviderService.disconnect();
       CeloService.disconnect();
       setIsConnected(false);
