@@ -136,10 +136,17 @@ class CeloService {
       }
 
       const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, this.provider);
-      const balance = await tokenContract.balanceOf(this.signer.address);
-      const decimals = await tokenContract.decimals();
       
-      return ethers.formatUnits(balance, decimals);
+      // Check if contract exists by calling a simple method
+      try {
+        const decimals = await tokenContract.decimals();
+        const balance = await tokenContract.balanceOf(this.signer.address);
+        
+        return ethers.formatUnits(balance, decimals);
+      } catch (contractError) {
+        console.warn(`Contract at ${tokenAddress} may not exist or be accessible:`, contractError);
+        return '0';
+      }
     } catch (error) {
       console.error('Failed to get balance:', error);
       return '0';
@@ -247,7 +254,7 @@ class CeloService {
       }
 
       // Get token decimals
-      const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, this.provider);
+      const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, this.signer);
       const decimals = await tokenContract.decimals();
       const amountWei = ethers.parseUnits(amount, decimals);
 
