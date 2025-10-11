@@ -463,6 +463,12 @@ const styles = StyleSheet.create({
     fontFamily: 'monospace',
     textDecorationLine: 'underline',
   },
+  instructionsOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
 
 export default HomeScreen;
