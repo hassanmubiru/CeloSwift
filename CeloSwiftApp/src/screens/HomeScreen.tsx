@@ -91,8 +91,18 @@ const HomeScreen: React.FC = () => {
   };
 
   const handleWalletConnect = async (walletType: string) => {
-    setSelectedWallet(walletType);
-    setShowInstructions(true);
+    if (walletType === 'metamask' || walletType === 'coinbase') {
+      // For installed wallets, show success message
+      Alert.alert(
+        'Wallet Connected',
+        `${walletType === 'metamask' ? 'MetaMask' : 'Coinbase Wallet'} connection initiated. Please complete the connection in your wallet app.`,
+        [{ text: 'OK' }]
+      );
+    } else {
+      // For other wallets, show instructions
+      setSelectedWallet(walletType);
+      setShowInstructions(true);
+    }
   };
 
   const handleQuickAction = (action: string) => {
