@@ -1,6 +1,6 @@
-# WalletConnect v2 Setup Guide
+# WalletConnect Setup Guide
 
-This guide will help you set up WalletConnect v2 for real mobile MetaMask connections in CeloSwift.
+This guide will help you set up wallet connections for CeloSwift. Currently, the app supports real MetaMask connections on web browsers, with mobile WalletConnect integration in development.
 
 ## 1. Get Your WalletConnect Project ID
 

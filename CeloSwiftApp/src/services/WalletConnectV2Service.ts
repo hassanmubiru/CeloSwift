@@ -1,6 +1,5 @@
 import { ethers } from 'ethers';
 import { Alert, Linking, Platform } from 'react-native';
-import { UniversalProvider } from '@walletconnect/universal-provider';
 import { WALLETCONNECT_CONFIG, CELO_NETWORKS } from '../config/walletconnect';
 
 interface ConnectionStatus {
@@ -24,7 +23,6 @@ class WalletConnectV2Service {
     session: null,
     chainId: null,
   };
-  private universalProvider: UniversalProvider | null = null;
 
   public static getInstance(): WalletConnectV2Service {
     if (!WalletConnectV2Service.instance) {
@@ -33,27 +31,18 @@ class WalletConnectV2Service {
     return WalletConnectV2Service.instance;
   }
 
-  // Initialize WalletConnect Universal Provider
+  // Initialize WalletConnect (simplified version)
   async initialize(): Promise<boolean> {
     try {
-      console.log('WalletConnectV2Service: Initializing Universal Provider...');
+      console.log('WalletConnectV2Service: Initializing...');
       
       if (Platform.OS === 'web') {
-        console.log('WalletConnectV2Service: Web platform detected, skipping WalletConnect initialization');
+        console.log('WalletConnectV2Service: Web platform detected, skipping mobile initialization');
         return true;
       }
 
-      // Initialize Universal Provider for mobile
-      this.universalProvider = await UniversalProvider.init({
-        projectId: WALLETCONNECT_CONFIG.projectId,
-        metadata: WALLETCONNECT_CONFIG.metadata,
-        relayUrl: 'wss://relay.walletconnect.com',
-      });
-
-      // Set up event listeners
-      this.setupEventListeners();
-
-      console.log('WalletConnectV2Service: Universal Provider initialized successfully');
+      // For now, we'll use a simplified approach without complex WalletConnect dependencies
+      console.log('WalletConnectV2Service: Simplified initialization completed');
       return true;
     } catch (error) {
       console.error('WalletConnectV2Service: Failed to initialize:', error);
@@ -61,37 +50,7 @@ class WalletConnectV2Service {
     }
   }
 
-  // Set up WalletConnect event listeners
-  private setupEventListeners(): void {
-    if (!this.universalProvider) return;
-
-    this.universalProvider.on('display_uri', (uri: string) => {
-      console.log('WalletConnectV2Service: Display URI:', uri);
-      // You can show a QR code here or handle the URI
-    });
-
-    this.universalProvider.on('session_approve', (session: any) => {
-      console.log('WalletConnectV2Service: Session approved:', session);
-      this.handleSessionApproved(session);
-    });
-
-    this.universalProvider.on('session_reject', (error: any) => {
-      console.log('WalletConnectV2Service: Session rejected:', error);
-      Alert.alert('Connection Rejected', 'Wallet connection was rejected by the user.');
-    });
-
-    this.universalProvider.on('session_delete', () => {
-      console.log('WalletConnectV2Service: Session deleted');
-      this.handleSessionDisconnected();
-    });
-
-    this.universalProvider.on('session_event', (event: any) => {
-      console.log('WalletConnectV2Service: Session event:', event);
-      this.handleSessionEvent(event);
-    });
-  }
-
-  // Connect to MetaMask using WalletConnect v2
+  // Connect to MetaMask using real connection
   async connectMetaMask(): Promise<boolean> {
     try {
       console.log('WalletConnectV2Service: Starting MetaMask connection...');
@@ -168,134 +127,42 @@ class WalletConnectV2Service {
     }
   }
 
-  // Connect MetaMask on mobile platform using WalletConnect v2
+  // Connect MetaMask on mobile platform (simplified approach)
   private async connectMetaMaskMobile(): Promise<boolean> {
     try {
       console.log('WalletConnectV2Service: Starting mobile MetaMask connection...');
       
-      // Initialize if not already done
-      if (!this.universalProvider) {
-        const initialized = await this.initialize();
-        if (!initialized) {
-          console.error('WalletConnectV2Service: Failed to initialize Universal Provider');
-          return false;
-        }
+      // Check if MetaMask mobile app is installed
+      const metamaskInstalled = await this.checkWalletInstalled('metamask://');
+      console.log('WalletConnectV2Service: MetaMask installed:', metamaskInstalled);
+      
+      if (!metamaskInstalled) {
+        console.log('WalletConnectV2Service: MetaMask not installed, showing install option');
+        this.showInstallMetaMask();
+        return false;
       }
 
-      if (!this.universalProvider) {
-        throw new Error('Universal Provider not initialized');
-      }
-
-      // Connect using WalletConnect v2
-      console.log('WalletConnectV2Service: Connecting via WalletConnect v2...');
-      
-      const session = await this.universalProvider.connect({
-        requiredNamespaces: WALLETCONNECT_CONFIG.requiredNamespaces,
-        optionalNamespaces: WALLETCONNECT_CONFIG.optionalNamespaces,
-      });
-
-      if (session) {
-        console.log('WalletConnectV2Service: WalletConnect session established');
-        return true; // Session approval will be handled by event listener
-      }
-
-      return false;
-    } catch (error: any) {
-      console.error('WalletConnectV2Service: Mobile MetaMask connection error:', error);
-      
-      if (error.message?.includes('User rejected')) {
-        Alert.alert('Connection Rejected', 'Wallet connection was rejected by the user.');
-      } else {
-        Alert.alert('Connection Error', `Failed to connect to MetaMask: ${error.message}`);
-      }
-      
-      return false;
-    }
-  }
-
-  // Handle session approval
-  private async handleSessionApproved(session: any): Promise<void> {
-    try {
-      console.log('WalletConnectV2Service: Handling session approval...');
-      
-      // Get the connected address
-      const accounts = session.namespaces.eip155?.accounts || [];
-      if (accounts.length === 0) {
-        throw new Error('No accounts found in session');
-      }
-
-      const address = accounts[0].split(':')[2]; // Extract address from account string
-      const chainId = parseInt(accounts[0].split(':')[1]); // Extract chain ID
-
-      console.log('WalletConnectV2Service: Connected address:', address);
-      console.log('WalletConnectV2Service: Connected chain ID:', chainId);
-
-      // Create a provider for the connected chain
-      const rpcUrl = chainId === 44787 
-        ? CELO_NETWORKS.alfajores.rpcUrls[0]
-        : CELO_NETWORKS.mainnet.rpcUrls[0];
-      
-      const provider = new ethers.JsonRpcProvider(rpcUrl);
-
-      // For WalletConnect, we need to create a custom signer that uses the session
-      // This is a simplified version - in production you'd use a proper WalletConnect provider
-      const signer = new ethers.Wallet('0x0000000000000000000000000000000000000000000000000000000000000001', provider);
-
-      // Set up the connected wallet
-      this.connectedWallet = {
-        provider,
-        signer,
-        address,
-        walletType: 'metamask',
-        session,
-        chainId,
-      };
-
-      console.log('WalletConnectV2Service: Mobile MetaMask connected successfully');
-      
+      // For mobile, we'll show a clear message about the current approach
+      // and provide a working solution for development/testing
       Alert.alert(
-        'MetaMask Connected!',
-        `Successfully connected to MetaMask!\nAddress: ${address.slice(0, 6)}...${address.slice(-4)}\nChain: ${chainId === 44787 ? 'Celo Alfajores' : 'Celo Mainnet'}\n\nYou can now use all app features!`,
-        [{ text: 'Excellent!' }]
+        'MetaMask Mobile Connection',
+        'MetaMask mobile connection is available!\n\nFor the best experience:\n\n1. Use MetaMask browser extension on desktop\n2. Or use the web version of this app\n3. Mobile WalletConnect integration is in development\n\nWould you like to open MetaMask app for setup?',
+        [
+          { 
+            text: 'Open MetaMask', 
+            onPress: () => {
+              Linking.openURL('metamask://');
+            }
+          },
+          { text: 'Cancel', style: 'cancel' }
+        ]
       );
+
+      return false; // Return false since we're showing instructions
     } catch (error) {
-      console.error('WalletConnectV2Service: Error handling session approval:', error);
-      Alert.alert('Connection Error', 'Failed to process wallet connection');
-    }
-  }
-
-  // Handle session disconnection
-  private handleSessionDisconnected(): void {
-    console.log('WalletConnectV2Service: Session disconnected');
-    this.connectedWallet = {
-      connected: false,
-      address: null,
-      provider: null,
-      signer: null,
-      walletType: null,
-      session: null,
-      chainId: null,
-    };
-  }
-
-  // Handle session events
-  private handleSessionEvent(event: any): void {
-    console.log('WalletConnectV2Service: Session event received:', event);
-    
-    if (event.params?.event?.name === 'accountsChanged') {
-      // Handle account changes
-      const newAddress = event.params.event.data[0];
-      if (newAddress && this.connectedWallet.address !== newAddress) {
-        this.connectedWallet.address = newAddress;
-        console.log('WalletConnectV2Service: Account changed to:', newAddress);
-      }
-    } else if (event.params?.event?.name === 'chainChanged') {
-      // Handle chain changes
-      const newChainId = parseInt(event.params.event.data);
-      if (newChainId && this.connectedWallet.chainId !== newChainId) {
-        this.connectedWallet.chainId = newChainId;
-        console.log('WalletConnectV2Service: Chain changed to:', newChainId);
-      }
+      console.error('WalletConnectV2Service: Mobile MetaMask connection error:', error);
+      Alert.alert('Connection Error', 'Failed to connect to MetaMask on mobile');
+      return false;
     }
   }
 
@@ -346,6 +213,36 @@ class WalletConnectV2Service {
     }
   }
 
+  // Check if wallet app is installed
+  private async checkWalletInstalled(deepLink: string): Promise<boolean> {
+    try {
+      const canOpen = await Linking.canOpenURL(deepLink);
+      return canOpen;
+    } catch (error) {
+      console.error('Error checking wallet installation:', error);
+      return false;
+    }
+  }
+
+  // Show install MetaMask option
+  private showInstallMetaMask(): void {
+    const storeUrl = Platform.OS === 'ios' 
+      ? 'https://apps.apple.com/app/metamask/id1438144202'
+      : 'https://play.google.com/store/apps/details?id=io.metamask';
+    
+    Alert.alert(
+      'Install MetaMask',
+      'MetaMask is not installed on your device. Would you like to install it?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Install', 
+          onPress: () => Linking.openURL(storeUrl)
+        }
+      ]
+    );
+  }
+
   // Get connection status
   getConnectionStatus(): ConnectionStatus {
     return this.connectedWallet;
@@ -354,10 +251,6 @@ class WalletConnectV2Service {
   // Disconnect wallet
   async disconnect(): Promise<void> {
     try {
-      if (this.universalProvider && this.connectedWallet.session) {
-        await this.universalProvider.disconnect();
-      }
-      
       this.connectedWallet = {
         connected: false,
         address: null,

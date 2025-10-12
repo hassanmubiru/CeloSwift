@@ -169,7 +169,7 @@ const WalletConnectModal: React.FC<WalletConnectModalProps> = ({
             <View style={styles.infoBox}>
               <Ionicons name="information-circle" size={20} color="#007AFF" />
               <Text style={styles.infoText}>
-                Mobile wallet connections use WalletConnect v2 for secure, decentralized communication.
+                Mobile wallet connections are in development. For now, please use the web version or MetaMask browser extension.
               </Text>
             </View>
           )}
@@ -224,7 +224,7 @@ const WalletConnectModal: React.FC<WalletConnectModalProps> = ({
             </Text>
             {Platform.OS !== 'web' && (
               <Text style={styles.footerSubtext}>
-                Powered by WalletConnect v2
+                Mobile WalletConnect integration coming soon
               </Text>
             )}
           </View>
