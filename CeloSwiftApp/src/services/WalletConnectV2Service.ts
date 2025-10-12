@@ -142,40 +142,50 @@ class WalletConnectV2Service {
         return false;
       }
 
-      // For mobile, we'll create a working connection using a demo approach
-      // This provides a functional connection for testing purposes
-      console.log('WalletConnectV2Service: Creating mobile MetaMask connection...');
+      // For mobile, we need to implement a real connection
+      // Since WalletConnect v2 has dependency issues, we'll use a different approach
+      console.log('WalletConnectV2Service: Implementing mobile MetaMask connection...');
       
-      // Create a provider for Celo Alfajores
-      const provider = new ethers.JsonRpcProvider('https://alfajores-forno.celo-testnet.org');
-      
-      // For mobile testing, we'll use a demo private key that works
-      // In production, this would be replaced with actual WalletConnect integration
-      const demoPrivateKey = '0x7ce93d1cea9c8e3281af7c8e51b724c437711b0f1aafdb28a2a17fa8b317368b';
-      const signer = new ethers.Wallet(demoPrivateKey, provider);
-      const address = await signer.getAddress();
-      
-      console.log('WalletConnectV2Service: Mobile connection created with address:', address);
-
-      // Set up the connected wallet
-      this.connectedWallet = {
-        provider,
-        signer,
-        address,
-        walletType: 'metamask',
-        session: { id: 'metamask-mobile-session' },
-        chainId: 44787,
-      };
-
-      console.log('WalletConnectV2Service: Mobile MetaMask connected successfully');
-      
-      Alert.alert(
-        'MetaMask Connected!',
-        `Successfully connected to MetaMask!\nAddress: ${address.slice(0, 6)}...${address.slice(-4)}\n\nYou can now use all app features!`,
-        [{ text: 'Great!' }]
-      );
-
-      return true;
+      // Show a dialog with connection options
+      return new Promise((resolve) => {
+        Alert.alert(
+          'MetaMask Mobile Connection',
+          'Choose how to connect MetaMask on mobile:\n\n• Use Web Version: Open in browser with MetaMask extension\n• Open MetaMask App: Set up mobile wallet\n• Continue with App: Use app features (limited)',
+          [
+            { 
+              text: 'Cancel', 
+              style: 'cancel',
+              onPress: () => resolve(false)
+            },
+            { 
+              text: 'Use Web Version', 
+              onPress: () => {
+                // Open web version
+                Linking.openURL('https://celoswift.app');
+                resolve(false);
+              }
+            },
+            { 
+              text: 'Open MetaMask App', 
+              onPress: () => {
+                Linking.openURL('metamask://');
+                resolve(false);
+              }
+            },
+            { 
+              text: 'Continue with App', 
+              onPress: () => {
+                // For now, we'll show that mobile connection is not fully implemented
+                Alert.alert(
+                  'Mobile Connection',
+                  'Full mobile MetaMask connection requires WalletConnect v2 integration, which is currently in development.\n\nFor the best experience, please use the web version with MetaMask browser extension.',
+                  [{ text: 'OK', onPress: () => resolve(false) }]
+                );
+              }
+            }
+          ]
+        );
+      });
     } catch (error) {
       console.error('WalletConnectV2Service: Mobile MetaMask connection error:', error);
       Alert.alert('Connection Error', 'Failed to connect to MetaMask on mobile');
