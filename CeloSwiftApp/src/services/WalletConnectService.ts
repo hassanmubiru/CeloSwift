@@ -1,7 +1,5 @@
 import { ethers } from 'ethers';
 import { Alert, Linking, Platform } from 'react-native';
-import { SignClient } from '@walletconnect/sign-client';
-import { WalletConnectModal } from '@walletconnect/modal-react-native';
 
 interface ConnectionStatus {
   connected: boolean;
@@ -22,48 +20,11 @@ class WalletConnectService {
     walletType: null,
     session: null,
   };
-  private signClient: SignClient | null = null;
-  private modal: WalletConnectModal | null = null;
-
   public static getInstance(): WalletConnectService {
     if (!WalletConnectService.instance) {
       WalletConnectService.instance = new WalletConnectService();
     }
     return WalletConnectService.instance;
-  }
-
-  // Initialize WalletConnect
-  async initialize(): Promise<boolean> {
-    try {
-      if (Platform.OS !== 'web') {
-        // Initialize WalletConnect for mobile
-        this.signClient = await SignClient.init({
-          projectId: 'YOUR_PROJECT_ID', // You'll need to get this from WalletConnect Cloud
-          metadata: {
-            name: 'CeloSwift',
-            description: 'Mobile-first decentralized remittance application on Celo',
-            url: 'https://celoswift.app',
-            icons: ['https://celoswift.app/icon.png'],
-          },
-        });
-
-        this.modal = new WalletConnectModal({
-          projectId: 'YOUR_PROJECT_ID',
-          providerMetadata: {
-            name: 'CeloSwift',
-            description: 'Mobile-first decentralized remittance application on Celo',
-            url: 'https://celoswift.app',
-            icons: ['https://celoswift.app/icon.png'],
-          },
-        });
-
-        console.log('WalletConnect initialized successfully');
-      }
-      return true;
-    } catch (error) {
-      console.error('Failed to initialize WalletConnect:', error);
-      return false;
-    }
   }
 
   // Connect to MetaMask using real connection
