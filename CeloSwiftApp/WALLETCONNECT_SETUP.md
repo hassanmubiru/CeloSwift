@@ -2,51 +2,47 @@
 
 This guide will help you set up wallet connections for CeloSwift. Currently, the app supports real MetaMask connections on web browsers, with mobile WalletConnect integration in development.
 
-## 1. Get Your WalletConnect Project ID
+## Current Status
 
-### Step 1: Visit WalletConnect Cloud
-1. Go to [https://cloud.walletconnect.com/](https://cloud.walletconnect.com/)
-2. Sign up or log in to your account
-3. Create a new project
+### ✅ What Works Now:
+- **Web Browser**: Full MetaMask connection with browser extension
+- **Network Switching**: Automatic Celo Alfajores network configuration
+- **Real Transactions**: All blockchain operations use real MetaMask
+- **Account Management**: Multiple account support
 
-### Step 2: Configure Your Project
-1. **Project Name**: `CeloSwift`
-2. **Description**: `Mobile-first decentralized remittance application on Celo`
-3. **Website URL**: `https://celoswift.app` (or your domain)
-4. **App Icon**: Upload your app icon (recommended: 512x512 PNG)
+### 🚧 In Development:
+- **Mobile WalletConnect**: Full mobile wallet integration
+- **Additional Wallets**: Coinbase Wallet, Trust Wallet support
+- **Session Persistence**: Mobile session management
 
-### Step 3: Get Your Project ID
-1. After creating the project, you'll see your **Project ID**
-2. Copy this Project ID (it looks like: `2f05a7f74c1f039807b52bcc32f9c62a`)
+## 1. Web MetaMask Connection (Ready Now)
 
-## 2. Update Your Configuration
+### How It Works:
+1. Open CeloSwift in a web browser
+2. Click "Connect Wallet" → "MetaMask"
+3. MetaMask popup appears
+4. Approve the connection
+5. Network automatically switches to Celo Alfajores
+6. Full app functionality available
 
-### Update the Project ID
-1. Open `src/config/walletconnect.ts`
-2. Replace the demo Project ID with your own:
+### Requirements:
+- MetaMask browser extension installed
+- MetaMask unlocked with at least one account
+- Internet connection
 
-```typescript
-export const WALLETCONNECT_CONFIG = {
-  // Replace this with your actual Project ID from WalletConnect Cloud
-  projectId: 'YOUR_ACTUAL_PROJECT_ID_HERE',
-  
-  // Update these with your actual app details
-  metadata: {
-    name: 'CeloSwift',
-    description: 'Mobile-first decentralized remittance application on Celo',
-    url: 'https://your-actual-domain.com', // Update with your domain
-    icons: ['https://your-actual-domain.com/icon.png'], // Update with your icon URL
-  },
-  
-  // Update these with your app's deep link scheme
-  redirect: {
-    native: 'your-app-scheme://', // Replace with your app's scheme
-    universal: 'https://your-actual-domain.com', // Update with your domain
-  },
-  
-  // ... rest of the configuration
-};
-```
+## 2. Mobile Development (Coming Soon)
+
+### Current Mobile Experience:
+- App detects installed wallets
+- Shows clear instructions for mobile setup
+- Provides links to install MetaMask mobile app
+- Explains current limitations
+
+### Future Mobile Features:
+- Full WalletConnect v2 integration
+- Real mobile wallet connections
+- Session persistence
+- Multi-wallet support
 
 ## 3. Configure Deep Linking (Mobile)
 
