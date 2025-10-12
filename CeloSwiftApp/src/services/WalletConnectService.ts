@@ -148,15 +148,6 @@ class WalletConnectService {
     try {
       console.log('WalletConnectService: Starting mobile MetaMask connection...');
       
-      // Initialize WalletConnect if not already done
-      if (!this.signClient) {
-        const initialized = await this.initialize();
-        if (!initialized) {
-          console.error('WalletConnectService: Failed to initialize WalletConnect');
-          return false;
-        }
-      }
-
       // Check if MetaMask mobile app is installed
       const metamaskInstalled = await this.checkWalletInstalled('metamask://');
       console.log('WalletConnectService: MetaMask installed:', metamaskInstalled);
@@ -167,78 +158,23 @@ class WalletConnectService {
         return false;
       }
 
-      // Use WalletConnect v2 to connect to MetaMask
-      if (this.signClient && this.modal) {
-        console.log('WalletConnectService: Using WalletConnect v2 for MetaMask connection');
-        
-        try {
-          // Open WalletConnect modal
-          const session = await this.modal.open({
-            requiredNamespaces: {
-              eip155: {
-                methods: ['eth_sendTransaction', 'eth_signTransaction', 'eth_sign', 'personal_sign'],
-                chains: ['eip155:44787'], // Celo Alfajores chain ID
-                events: ['chainChanged', 'accountsChanged'],
-              },
-            },
-          });
-
-          if (session) {
-            console.log('WalletConnectService: WalletConnect session established');
-            
-            // Get the connected address
-            const accounts = session.namespaces.eip155?.accounts || [];
-            if (accounts.length > 0) {
-              const address = accounts[0].split(':')[2]; // Extract address from account string
-              
-              // Create a provider using WalletConnect
-              const provider = new ethers.JsonRpcProvider('https://alfajores-forno.celo-testnet.org');
-              
-              // For now, we'll use a placeholder signer since WalletConnect integration is complex
-              // In a full implementation, you'd create a proper WalletConnect provider
-              const signer = new ethers.Wallet('0x0000000000000000000000000000000000000000000000000000000000000001', provider);
-              
-              this.connectedWallet = {
-                provider,
-                signer,
-                address,
-                walletType: 'metamask',
-                session,
-              };
-
-              console.log('WalletConnectService: Mobile MetaMask connected successfully');
-              
-              Alert.alert(
-                'MetaMask Connected!',
-                `Successfully connected to MetaMask!\nAddress: ${address.slice(0, 6)}...${address.slice(-4)}\n\nYou can now use all app features!`,
-                [{ text: 'Great!' }]
-              );
-
-              return true;
-            }
-          }
-        } catch (modalError) {
-          console.error('WalletConnectService: Modal error:', modalError);
-          // Fall back to instructions
-        }
-      }
-
-      // Fallback: Show instructions for manual setup
+      // For mobile, we need to show a clear message about the current limitations
+      // and provide a working solution for development/testing
       Alert.alert(
         'MetaMask Mobile Connection',
-        'To connect MetaMask on mobile:\n\n1. Install MetaMask mobile app\n2. Set up Celo Alfajores network in MetaMask\n3. Use WalletConnect for connection\n\nFor now, please use MetaMask browser extension on desktop for full functionality.',
+        'MetaMask mobile connection requires WalletConnect v2 integration.\n\nFor development and testing:\n\n1. Use MetaMask browser extension on desktop\n2. Or use the web version of this app\n3. Mobile WalletConnect integration coming soon\n\nWould you like to open MetaMask app for setup?',
         [
           { 
-            text: 'Open MetaMask App', 
+            text: 'Open MetaMask', 
             onPress: () => {
               Linking.openURL('metamask://');
             }
           },
-          { text: 'OK' }
+          { text: 'Cancel', style: 'cancel' }
         ]
       );
 
-      return false;
+      return false; // Return false since real mobile connection requires WalletConnect v2
     } catch (error) {
       console.error('WalletConnectService: Mobile MetaMask connection error:', error);
       Alert.alert('Connection Error', 'Failed to connect to MetaMask on mobile');
