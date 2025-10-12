@@ -65,7 +65,7 @@ const HomeScreen: React.FC = () => {
       
       // Check if we're already connected to a mobile wallet
       const mobileConnectionStatus = MobileWalletService.getConnectionStatus();
-      if (mobileConnectionStatus.connected && mobileConnectionStatus.address) {
+      if (mobileConnectionStatus && mobileConnectionStatus.address) {
         setIsConnected(true);
         setAddress(mobileConnectionStatus.address);
         await fetchUserData();
