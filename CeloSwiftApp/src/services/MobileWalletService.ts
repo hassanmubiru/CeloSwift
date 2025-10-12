@@ -96,17 +96,27 @@ class MobileWalletService {
   // Connect to MetaMask mobile
   async connectMetaMask(): Promise<boolean> {
     try {
+      console.log('Starting MetaMask connection...');
       const metamaskWallet = this.getMobileWallets().find(w => w.id === 'metamask');
-      if (!metamaskWallet) return false;
+      if (!metamaskWallet) {
+        console.log('MetaMask wallet not found in configuration');
+        return false;
+      }
 
       const isInstalled = await this.checkWalletInstalled(metamaskWallet.deepLink);
+      console.log('MetaMask installed:', isInstalled);
       
       if (isInstalled) {
         // Use WalletConnect service for connection
+        console.log('Calling WalletConnectService.connectMetaMask()...');
         const success = await WalletConnectService.connectMetaMask();
+        console.log('WalletConnectService.connectMetaMask() result:', success);
+        
         if (success) {
           // Check if we actually connected
           const connectionStatus = WalletConnectService.getConnectionStatus();
+          console.log('WalletConnect connection status:', connectionStatus);
+          
           if (connectionStatus.connected) {
             this.connectedWallet = {
               provider: connectionStatus.provider,
@@ -114,12 +124,15 @@ class MobileWalletService {
               address: connectionStatus.address,
               walletType: connectionStatus.walletType,
             };
+            console.log('MetaMask connected successfully');
             return true;
           }
         }
+        console.log('MetaMask connection failed');
         return false;
       } else {
         // Show install option
+        console.log('MetaMask not installed, showing install option');
         this.showInstallOption(metamaskWallet);
         return false;
       }

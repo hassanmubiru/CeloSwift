@@ -60,12 +60,15 @@ class WalletConnectService {
   // Connect to MetaMask using WalletConnect
   async connectMetaMask(): Promise<boolean> {
     try {
+      console.log('WalletConnectService: Starting MetaMask connection...');
       // Check if MetaMask is available
       const metamaskInstalled = await this.checkWalletInstalled('metamask://');
+      console.log('WalletConnectService: MetaMask installed:', metamaskInstalled);
       
       if (metamaskInstalled) {
         // For now, show instructions for manual connection
         // In a full implementation, this would use WalletConnect
+        console.log('WalletConnectService: Showing MetaMask connection dialog...');
         Alert.alert(
           'MetaMask Connection',
           'To connect MetaMask to CeloSwift:\n\n1. Open MetaMask app\n2. Tap "Connect" or scan QR code\n3. Add Celo Alfajores network if not already added:\n   - Network Name: Celo Alfajores\n   - RPC URL: https://alfajores-forno.celo-testnet.org\n   - Chain ID: 44787\n   - Currency Symbol: CELO\n\n4. Approve the connection request',
@@ -81,13 +84,15 @@ class WalletConnectService {
             }
           ]
         );
+        console.log('WalletConnectService: MetaMask connection dialog shown');
         return true;
       } else {
+        console.log('WalletConnectService: MetaMask not installed, showing install option');
         this.showInstallMetaMask();
         return false;
       }
     } catch (error) {
-      console.error('MetaMask connection error:', error);
+      console.error('WalletConnectService: MetaMask connection error:', error);
       Alert.alert('Error', 'Failed to connect to MetaMask');
       return false;
     }
@@ -260,15 +265,18 @@ class WalletConnectService {
   // Simulate connection (for testing purposes)
   async simulateConnection(walletType: string): Promise<boolean> {
     try {
+      console.log('WalletConnectService: Starting simulation for', walletType);
       // This is a temporary solution for testing
       // In production, this would be replaced with actual WalletConnect integration
       const provider = new ethers.JsonRpcProvider('https://alfajores-forno.celo-testnet.org');
+      console.log('WalletConnectService: Provider created');
       
       // For testing, we'll use a demo private key
       // In production, this would come from the actual wallet connection
       const demoPrivateKey = '0x7ce93d1cea9c8e3281af7c8e51b724c437711b0f1aafdb28a2a17fa8b317368b';
       const signer = new ethers.Wallet(demoPrivateKey, provider);
       const address = await signer.getAddress();
+      console.log('WalletConnectService: Signer created, address:', address);
 
       this.connectedWallet = {
         provider,
@@ -277,6 +285,7 @@ class WalletConnectService {
         walletType,
         session: { id: 'demo-session' },
       };
+      console.log('WalletConnectService: Wallet connected successfully');
 
       Alert.alert(
         'Wallet Connected',
@@ -286,7 +295,7 @@ class WalletConnectService {
 
       return true;
     } catch (error) {
-      console.error('Simulated connection error:', error);
+      console.error('WalletConnectService: Simulated connection error:', error);
       Alert.alert('Error', 'Failed to simulate wallet connection');
       return false;
     }
