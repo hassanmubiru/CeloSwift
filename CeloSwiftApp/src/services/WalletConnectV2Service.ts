@@ -153,12 +153,11 @@ class WalletConnectV2Service {
       // that simulates a real MetaMask connection but uses a different method
       // This is for development/testing purposes until full WalletConnect is implemented
       
-      // Generate a deterministic address based on device info or user input
+      // Generate a deterministic address for mobile development
       // This creates a consistent "wallet" for the mobile app
       const deviceId = 'mobile-device-' + Date.now();
-      const seedPhrase = ethers.keccak256(ethers.toUtf8Bytes(deviceId));
-      const wallet = ethers.Wallet.fromPhrase(seedPhrase);
-      const signer = wallet.connect(provider);
+      const privateKey = ethers.keccak256(ethers.toUtf8Bytes(deviceId));
+      const signer = new ethers.Wallet(privateKey, provider);
       const address = await signer.getAddress();
       
       console.log('WalletConnectV2Service: Mobile connection created with address:', address);
