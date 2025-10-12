@@ -69,23 +69,49 @@ class WalletConnectService {
         // For now, show instructions for manual connection
         // In a full implementation, this would use WalletConnect
         console.log('WalletConnectService: Showing MetaMask connection dialog...');
-        Alert.alert(
-          'MetaMask Connection',
-          'To connect MetaMask to CeloSwift:\n\n1. Open MetaMask app\n2. Tap "Connect" or scan QR code\n3. Add Celo Alfajores network if not already added:\n   - Network Name: Celo Alfajores\n   - RPC URL: https://alfajores-forno.celo-testnet.org\n   - Chain ID: 44787\n   - Currency Symbol: CELO\n\n4. Approve the connection request',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            { 
-              text: 'Open MetaMask', 
-              onPress: () => this.openMetaMaskApp()
-            },
-            { 
-              text: 'Simulate Connection', 
-              onPress: () => this.simulateConnection('metamask')
-            }
-          ]
-        );
-        console.log('WalletConnectService: MetaMask connection dialog shown');
-        return true;
+        
+        // Create a promise that resolves when the user makes a choice
+        return new Promise((resolve) => {
+          Alert.alert(
+            'MetaMask Connection',
+            'To connect MetaMask to CeloSwift:\n\n1. Open MetaMask app\n2. Tap "Connect" or scan QR code\n3. Add Celo Alfajores network if not already added:\n   - Network Name: Celo Alfajores\n   - RPC URL: https://alfajores-forno.celo-testnet.org\n   - Chain ID: 44787\n   - Currency Symbol: CELO\n\n4. Approve the connection request',
+            [
+              { 
+                text: 'Cancel', 
+                style: 'cancel',
+                onPress: () => {
+                  console.log('WalletConnectService: User cancelled MetaMask connection');
+                  resolve(false);
+                }
+              },
+              { 
+                text: 'Open MetaMask', 
+                onPress: () => {
+                  console.log('WalletConnectService: User chose to open MetaMask app');
+                  this.openMetaMaskApp();
+                  // Show additional instructions after opening the app
+                  setTimeout(() => {
+                    Alert.alert(
+                      'MetaMask Opened',
+                      'MetaMask app has been opened. Please:\n\n1. Add Celo Alfajores network if not already added\n2. Return to this app\n3. Try connecting again and choose "Simulate Connection" for testing',
+                      [{ text: 'OK' }]
+                    );
+                  }, 1000);
+                  resolve(false); // Not actually connected yet
+                }
+              },
+              { 
+                text: 'Simulate Connection', 
+                onPress: async () => {
+                  console.log('WalletConnectService: User chose simulation');
+                  const success = await this.simulateConnection('metamask');
+                  console.log('WalletConnectService: Simulation result:', success);
+                  resolve(success);
+                }
+              }
+            ]
+          );
+        });
       } else {
         console.log('WalletConnectService: MetaMask not installed, showing install option');
         this.showInstallMetaMask();
@@ -104,22 +130,33 @@ class WalletConnectService {
       const trustInstalled = await this.checkWalletInstalled('trust://');
       
       if (trustInstalled) {
-        Alert.alert(
-          'Trust Wallet Connection',
-          'To connect Trust Wallet to CeloSwift:\n\n1. Open Trust Wallet app\n2. Go to DApp browser\n3. Navigate to CeloSwift or scan QR code\n4. Add Celo Alfajores network if needed\n5. Approve the connection request',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            { 
-              text: 'Open Trust Wallet', 
-              onPress: () => this.openTrustWalletApp()
-            },
-            { 
-              text: 'Simulate Connection', 
-              onPress: () => this.simulateConnection('trust')
-            }
-          ]
-        );
-        return true;
+        return new Promise((resolve) => {
+          Alert.alert(
+            'Trust Wallet Connection',
+            'To connect Trust Wallet to CeloSwift:\n\n1. Open Trust Wallet app\n2. Go to DApp browser\n3. Navigate to CeloSwift or scan QR code\n4. Add Celo Alfajores network if needed\n5. Approve the connection request',
+            [
+              { 
+                text: 'Cancel', 
+                style: 'cancel',
+                onPress: () => resolve(false)
+              },
+              { 
+                text: 'Open Trust Wallet', 
+                onPress: () => {
+                  this.openTrustWalletApp();
+                  resolve(false);
+                }
+              },
+              { 
+                text: 'Simulate Connection', 
+                onPress: async () => {
+                  const success = await this.simulateConnection('trust');
+                  resolve(success);
+                }
+              }
+            ]
+          );
+        });
       } else {
         this.showInstallTrustWallet();
         return false;
@@ -137,22 +174,33 @@ class WalletConnectService {
       const coinbaseInstalled = await this.checkWalletInstalled('cbwallet://');
       
       if (coinbaseInstalled) {
-        Alert.alert(
-          'Coinbase Wallet Connection',
-          'To connect Coinbase Wallet to CeloSwift:\n\n1. Open Coinbase Wallet app\n2. Go to DApp browser\n3. Navigate to CeloSwift or scan QR code\n4. Add Celo Alfajores network if needed\n5. Approve the connection request',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            { 
-              text: 'Open Coinbase Wallet', 
-              onPress: () => this.openCoinbaseWalletApp()
-            },
-            { 
-              text: 'Simulate Connection', 
-              onPress: () => this.simulateConnection('coinbase')
-            }
-          ]
-        );
-        return true;
+        return new Promise((resolve) => {
+          Alert.alert(
+            'Coinbase Wallet Connection',
+            'To connect Coinbase Wallet to CeloSwift:\n\n1. Open Coinbase Wallet app\n2. Go to DApp browser\n3. Navigate to CeloSwift or scan QR code\n4. Add Celo Alfajores network if needed\n5. Approve the connection request',
+            [
+              { 
+                text: 'Cancel', 
+                style: 'cancel',
+                onPress: () => resolve(false)
+              },
+              { 
+                text: 'Open Coinbase Wallet', 
+                onPress: () => {
+                  this.openCoinbaseWalletApp();
+                  resolve(false);
+                }
+              },
+              { 
+                text: 'Simulate Connection', 
+                onPress: async () => {
+                  const success = await this.simulateConnection('coinbase');
+                  resolve(success);
+                }
+              }
+            ]
+          );
+        });
       } else {
         this.showInstallCoinbaseWallet();
         return false;

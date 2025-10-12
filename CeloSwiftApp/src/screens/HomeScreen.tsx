@@ -125,8 +125,18 @@ const HomeScreen: React.FC = () => {
           [{ text: 'OK' }]
         );
       } else {
-        // Connection is in progress, don't show error yet
-        console.log('Wallet connection in progress...');
+        // Connection process completed but not actually connected
+        // This could be because user cancelled or chose "Open MetaMask"
+        console.log('Wallet connection process completed (not connected)');
+        
+        // Show helpful message for MetaMask specifically
+        if (walletType === 'metamask') {
+          Alert.alert(
+            'MetaMask Connection',
+            'To complete the connection:\n\n1. If you opened MetaMask, add Celo Alfajores network\n2. Return to this app\n3. Try connecting again and choose "Simulate Connection" for testing\n\nOr use the "Simulate Connection" option for immediate testing.',
+            [{ text: 'OK' }]
+          );
+        }
       }
     } else {
       // For other wallets, show instructions

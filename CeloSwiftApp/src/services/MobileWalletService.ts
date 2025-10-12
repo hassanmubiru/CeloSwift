@@ -128,7 +128,10 @@ class MobileWalletService {
             return true;
           }
         }
-        console.log('MetaMask connection failed');
+        
+        // If we get here, either the user cancelled or chose "Open MetaMask"
+        // For "Open MetaMask", we should not treat this as a failure
+        console.log('MetaMask connection process completed (user may have opened app or cancelled)');
         return false;
       } else {
         // Show install option
