@@ -68,12 +68,12 @@ const HistoryScreen: React.FC = () => {
       setTransactions(userTransactions);
     } catch (error) {
       console.error('Error fetching transactions:', error);
-      // Fallback to mock data if contract fails
-      setTransactions(mockTransactions);
+      // No transactions available
+      setTransactions([]);
     }
   };
 
-  // Mock data for demonstration
+  // Remove mock data - use real transactions only
   const mockTransactions: Transaction[] = [
     {
       id: '1',
@@ -147,8 +147,8 @@ const HistoryScreen: React.FC = () => {
   }, [address]);
 
   const loadTransactions = async () => {
-    // In a real app, this would fetch from your backend/contracts
-    setTransactions(mockTransactions);
+    // Load real transactions from blockchain
+    await fetchTransactions();
   };
 
   const onRefresh = async () => {

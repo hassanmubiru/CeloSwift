@@ -94,7 +94,7 @@ const HomeScreen: React.FC = () => {
   const handleConnectWallet = () => {
     console.log('HomeScreen: handleConnectWallet called');
     setIsLoading(true);
-    // Simulate a brief loading state for better UX
+    // Show loading state for better UX
     setTimeout(() => {
       console.log('HomeScreen: Setting showWalletModal to true');
       setIsLoading(false);

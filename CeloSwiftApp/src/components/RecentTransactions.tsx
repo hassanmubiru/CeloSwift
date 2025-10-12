@@ -27,38 +27,7 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
   transactions = [],
   onViewAll,
 }) => {
-  // Mock data for demonstration
-  const mockTransactions: Transaction[] = [
-    {
-      id: '1',
-      type: 'sent',
-      amount: '150.00',
-      currency: 'cUSD',
-      recipient: '+1234567890',
-      timestamp: '2 hours ago',
-      status: 'completed',
-    },
-    {
-      id: '2',
-      type: 'received',
-      amount: '75.50',
-      currency: 'cUSD',
-      recipient: '+0987654321',
-      timestamp: '1 day ago',
-      status: 'completed',
-    },
-    {
-      id: '3',
-      type: 'sent',
-      amount: '200.00',
-      currency: 'USDT',
-      recipient: '+1122334455',
-      timestamp: '3 days ago',
-      status: 'completed',
-    },
-  ];
-
-  const displayTransactions = transactions.length > 0 ? transactions : mockTransactions;
+  const displayTransactions = transactions;
 
   const renderTransaction = ({ item }: { item: Transaction }) => (
     <View style={styles.transactionItem}>
