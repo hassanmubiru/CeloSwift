@@ -1,11 +1,12 @@
 import 'react-native-get-random-values';
 import 'react-native-url-polyfill/auto';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, SafeAreaView } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
+import WalletConnectV2Service from './src/services/WalletConnectV2Service';
 
 // Import screens
 import HomeScreen from './src/screens/HomeScreen';
@@ -17,6 +18,20 @@ import ProfileScreen from './src/screens/ProfileScreen';
 const Tab = createBottomTabNavigator();
 
 export default function App() {
+  // Initialize WalletConnect when app starts
+  useEffect(() => {
+    const initializeWalletConnect = async () => {
+      try {
+        await WalletConnectV2Service.initialize();
+        console.log('App: WalletConnect initialized successfully');
+      } catch (error) {
+        console.error('App: Failed to initialize WalletConnect:', error);
+      }
+    };
+
+    initializeWalletConnect();
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" backgroundColor="#35D07F" />

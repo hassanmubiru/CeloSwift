@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
 import { Alert, Linking, Platform } from 'react-native';
+import WalletConnectV2Service from './WalletConnectV2Service';
 
 interface ConnectionStatus {
   connected: boolean;
@@ -32,12 +33,23 @@ class WalletConnectService {
     try {
       console.log('WalletConnectService: Starting real MetaMask connection...');
       
-      // Check if we're on web platform
-      if (Platform.OS === 'web') {
-        return await this.connectMetaMaskWeb();
-      } else {
-        return await this.connectMetaMaskMobile();
+      // Use the new WalletConnectV2Service for all connections
+      const success = await WalletConnectV2Service.connectMetaMask();
+      
+      if (success) {
+        // Update our connection status from the V2 service
+        const connectionStatus = WalletConnectV2Service.getConnectionStatus();
+        this.connectedWallet = {
+          connected: connectionStatus.connected,
+          address: connectionStatus.address,
+          provider: connectionStatus.provider,
+          signer: connectionStatus.signer,
+          walletType: connectionStatus.walletType,
+          session: connectionStatus.session,
+        };
       }
+      
+      return success;
     } catch (error) {
       console.error('WalletConnectService: MetaMask connection error:', error);
       Alert.alert('Connection Error', 'Failed to connect to MetaMask');
@@ -45,103 +57,6 @@ class WalletConnectService {
     }
   }
 
-  // Connect MetaMask on web platform
-  private async connectMetaMaskWeb(): Promise<boolean> {
-    try {
-      // Check if MetaMask is available
-      if (typeof window === 'undefined' || !(window as any).ethereum) {
-        Alert.alert('MetaMask Not Found', 'Please install MetaMask browser extension to connect.');
-        return false;
-      }
-
-      const ethereum = (window as any).ethereum;
-      
-      // Request account access
-      const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-      if (accounts.length === 0) {
-        Alert.alert('No Accounts', 'No MetaMask accounts found. Please create an account in MetaMask.');
-        return false;
-      }
-
-      // Create provider and signer
-      const provider = new ethers.BrowserProvider(ethereum);
-      const signer = await provider.getSigner();
-      const address = await signer.getAddress();
-
-      // Check and switch to Celo Alfajores network
-      await this.ensureCeloAlfajoresNetwork(ethereum);
-
-      // Set up the connected wallet
-      this.connectedWallet = {
-        provider: provider as any, // Type conversion for compatibility
-        signer: signer as any,
-        address,
-        walletType: 'metamask',
-        session: { id: 'metamask-web-session' },
-      };
-
-      console.log('WalletConnectService: MetaMask connected successfully:', address);
-      
-      Alert.alert(
-        'MetaMask Connected!',
-        `Successfully connected to MetaMask!\nAddress: ${address.slice(0, 6)}...${address.slice(-4)}\n\nYou can now use all app features!`,
-        [{ text: 'Great!' }]
-      );
-
-      return true;
-    } catch (error: any) {
-      console.error('WalletConnectService: Web MetaMask connection error:', error);
-      
-      if (error.code === 4001) {
-        Alert.alert('Connection Rejected', 'MetaMask connection was rejected. Please try again and approve the connection.');
-      } else if (error.code === -32002) {
-        Alert.alert('Connection Pending', 'MetaMask connection is already pending. Please check MetaMask and approve the connection.');
-      } else {
-        Alert.alert('Connection Error', `Failed to connect to MetaMask: ${error.message}`);
-      }
-      
-      return false;
-    }
-  }
-
-  // Connect MetaMask on mobile platform
-  private async connectMetaMaskMobile(): Promise<boolean> {
-    try {
-      console.log('WalletConnectService: Starting mobile MetaMask connection...');
-      
-      // Check if MetaMask mobile app is installed
-      const metamaskInstalled = await this.checkWalletInstalled('metamask://');
-      console.log('WalletConnectService: MetaMask installed:', metamaskInstalled);
-      
-      if (!metamaskInstalled) {
-        console.log('WalletConnectService: MetaMask not installed, showing install option');
-        this.showInstallMetaMask();
-        return false;
-      }
-
-      // For mobile, we need to show a clear message about the current limitations
-      // and provide a working solution for development/testing
-      Alert.alert(
-        'MetaMask Mobile Connection',
-        'MetaMask mobile connection requires WalletConnect v2 integration.\n\nFor development and testing:\n\n1. Use MetaMask browser extension on desktop\n2. Or use the web version of this app\n3. Mobile WalletConnect integration coming soon\n\nWould you like to open MetaMask app for setup?',
-        [
-          { 
-            text: 'Open MetaMask', 
-            onPress: () => {
-              Linking.openURL('metamask://');
-            }
-          },
-          { text: 'Cancel', style: 'cancel' }
-        ]
-      );
-
-      return false; // Return false since real mobile connection requires WalletConnect v2
-    } catch (error) {
-      console.error('WalletConnectService: Mobile MetaMask connection error:', error);
-      Alert.alert('Connection Error', 'Failed to connect to MetaMask on mobile');
-      return false;
-    }
-  }
 
   // Connect to Trust Wallet
   async connectTrustWallet(): Promise<boolean> {
@@ -336,16 +251,24 @@ class WalletConnectService {
   }
 
   // Disconnect wallet
-  disconnect() {
-    this.connectedWallet = {
-      connected: false,
-      address: null,
-      provider: null,
-      signer: null,
-      walletType: null,
-      session: null,
-    };
-    console.log('WalletConnect service disconnected');
+  async disconnect() {
+    try {
+      // Use the V2 service to disconnect
+      await WalletConnectV2Service.disconnect();
+      
+      // Update our local state
+      this.connectedWallet = {
+        connected: false,
+        address: null,
+        provider: null,
+        signer: null,
+        walletType: null,
+        session: null,
+      };
+      console.log('WalletConnect service disconnected');
+    } catch (error) {
+      console.error('Error disconnecting:', error);
+    }
   }
 }
 
