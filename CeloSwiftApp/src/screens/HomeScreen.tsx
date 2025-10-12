@@ -109,7 +109,8 @@ const HomeScreen: React.FC = () => {
       const connectionStatus = MobileWalletService.getConnectionStatus();
       console.log('HomeScreen: MobileWalletService connection status:', connectionStatus);
       
-      if (connectionStatus.connected && connectionStatus.address) {
+      // Check if we have a valid connection
+      if (connectionStatus && connectionStatus.address) {
         // Successfully connected
         setIsConnected(true);
         setAddress(connectionStatus.address);
@@ -125,12 +126,11 @@ const HomeScreen: React.FC = () => {
         
         Alert.alert(
           'Wallet Connected Successfully!',
-          `Connected to ${connectionStatus.walletType}\nAddress: ${connectionStatus.address.slice(0, 6)}...${connectionStatus.address.slice(-4)}`,
+          `Connected to ${connectionStatus.walletType || 'MetaMask'}\nAddress: ${connectionStatus.address.slice(0, 6)}...${connectionStatus.address.slice(-4)}`,
           [{ text: 'OK' }]
         );
       } else {
         // Connection process completed but not actually connected
-        // This could be because user cancelled or chose "Open MetaMask"
         console.log('Wallet connection process completed (not connected)');
         
         // Show helpful message for MetaMask specifically

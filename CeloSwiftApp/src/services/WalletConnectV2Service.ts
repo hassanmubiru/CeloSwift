@@ -95,6 +95,7 @@ class WalletConnectV2Service {
 
       // Set up the connected wallet
       this.connectedWallet = {
+        connected: true,
         provider: provider as any,
         signer: signer as any,
         address,
