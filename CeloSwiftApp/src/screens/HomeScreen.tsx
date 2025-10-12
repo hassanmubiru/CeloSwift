@@ -133,8 +133,11 @@ const HomeScreen: React.FC = () => {
         if (walletType === 'metamask') {
           Alert.alert(
             'MetaMask Connection',
-            'To complete the connection:\n\n1. If you opened MetaMask, add Celo Alfajores network\n2. Return to this app\n3. Try connecting again and choose "Simulate Connection" for testing\n\nOr use the "Simulate Connection" option for immediate testing.',
-            [{ text: 'OK' }]
+            'Welcome back! To complete the connection:\n\n1. If you set up MetaMask, try connecting again\n2. Choose "Simulate Connection" for immediate testing\n3. Or use "Open MetaMask" again if you need to add the Celo network\n\nFor the best experience, use "Simulate Connection" to test the app immediately.',
+            [
+              { text: 'Try Again', onPress: () => setShowWalletModal(true) },
+              { text: 'OK' }
+            ]
           );
         }
       }

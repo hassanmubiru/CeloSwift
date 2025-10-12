@@ -74,7 +74,7 @@ class WalletConnectService {
         return new Promise((resolve) => {
           Alert.alert(
             'MetaMask Connection',
-            'To connect MetaMask to CeloSwift:\n\n1. Open MetaMask app\n2. Tap "Connect" or scan QR code\n3. Add Celo Alfajores network if not already added:\n   - Network Name: Celo Alfajores\n   - RPC URL: https://alfajores-forno.celo-testnet.org\n   - Chain ID: 44787\n   - Currency Symbol: CELO\n\n4. Approve the connection request',
+            'Choose how to connect MetaMask:\n\n• Simulate Connection: Test the app immediately\n• Open MetaMask: Set up real wallet (requires manual return)',
             [
               { 
                 text: 'Cancel', 
@@ -85,28 +85,47 @@ class WalletConnectService {
                 }
               },
               { 
-                text: 'Open MetaMask', 
-                onPress: () => {
-                  console.log('WalletConnectService: User chose to open MetaMask app');
-                  this.openMetaMaskApp();
-                  // Show additional instructions after opening the app
-                  setTimeout(() => {
-                    Alert.alert(
-                      'MetaMask Opened',
-                      'MetaMask app has been opened. Please:\n\n1. Add Celo Alfajores network if not already added\n2. Return to this app\n3. Try connecting again and choose "Simulate Connection" for testing',
-                      [{ text: 'OK' }]
-                    );
-                  }, 1000);
-                  resolve(false); // Not actually connected yet
-                }
-              },
-              { 
                 text: 'Simulate Connection', 
                 onPress: async () => {
                   console.log('WalletConnectService: User chose simulation');
                   const success = await this.simulateConnection('metamask');
                   console.log('WalletConnectService: Simulation result:', success);
                   resolve(success);
+                }
+              },
+              { 
+                text: 'Open MetaMask', 
+                onPress: () => {
+                  console.log('WalletConnectService: User chose to open MetaMask app');
+                  this.openMetaMaskApp();
+                  // Show instructions with a return option
+                  Alert.alert(
+                    'MetaMask Setup Required',
+                    'MetaMask app has been opened. To complete setup:\n\n1. Add Celo Alfajores network:\n   - Network Name: Celo Alfajores\n   - RPC URL: https://alfajores-forno.celo-testnet.org\n   - Chain ID: 44787\n   - Currency Symbol: CELO\n\n2. Return to this app manually\n3. Try connecting again\n\nFor immediate testing, use "Simulate Connection" instead.',
+                    [
+                      { 
+                        text: 'I\'m Back from MetaMask', 
+                        onPress: () => {
+                          // When user returns, show them the connection options again
+                          Alert.alert(
+                            'Welcome Back!',
+                            'Now you can connect to MetaMask:\n\n• Simulate Connection: Test immediately\n• Try Real Connection: Attempt actual wallet connection',
+                            [
+                              { text: 'Cancel', onPress: () => resolve(false) },
+                              { 
+                                text: 'Simulate Connection', 
+                                onPress: async () => {
+                                  const success = await this.simulateConnection('metamask');
+                                  resolve(success);
+                                }
+                              }
+                            ]
+                          );
+                        }
+                      },
+                      { text: 'OK', onPress: () => resolve(false) }
+                    ]
+                  );
                 }
               }
             ]
@@ -223,10 +242,17 @@ class WalletConnectService {
     }
   }
 
-  // Open MetaMask app
+  // Open MetaMask app with return deep link
   private async openMetaMaskApp(): Promise<void> {
     try {
-      await Linking.openURL('metamask://');
+      // Try to open MetaMask with a deep link that could potentially return to our app
+      // This is a more sophisticated approach for future WalletConnect integration
+      const deepLink = 'metamask://';
+      await Linking.openURL(deepLink);
+      
+      // For now, we'll rely on the user manually returning to the app
+      // In a full WalletConnect implementation, this would handle the return flow
+      console.log('MetaMask app opened. User will need to return manually.');
     } catch (error) {
       console.error('Failed to open MetaMask app:', error);
       Alert.alert('Error', 'Failed to open MetaMask app');
