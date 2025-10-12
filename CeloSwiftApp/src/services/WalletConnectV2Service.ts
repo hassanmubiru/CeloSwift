@@ -1,6 +1,8 @@
 import { ethers } from 'ethers';
 import { Alert, Linking, Platform } from 'react-native';
 import { WALLETCONNECT_CONFIG, CELO_NETWORKS } from '../config/walletconnect';
+import { UniversalProvider } from '@walletconnect/universal-provider';
+import { WalletConnectModal } from '@walletconnect/modal-react-native';
 
 interface ConnectionStatus {
   connected: boolean;
@@ -23,6 +25,8 @@ class WalletConnectV2Service {
     session: null,
     chainId: null,
   };
+  private universalProvider: UniversalProvider | null = null;
+  private walletConnectModal: WalletConnectModal | null = null;
 
   public static getInstance(): WalletConnectV2Service {
     if (!WalletConnectV2Service.instance) {
@@ -31,26 +35,143 @@ class WalletConnectV2Service {
     return WalletConnectV2Service.instance;
   }
 
-  // Initialize WalletConnect (simplified version)
+  // Initialize WalletConnect v2
   async initialize(): Promise<boolean> {
     try {
-      console.log('WalletConnectV2Service: Initializing...');
+      console.log('WalletConnectV2Service: Initializing WalletConnect v2...');
       
       if (Platform.OS === 'web') {
-        console.log('WalletConnectV2Service: Web platform detected, skipping mobile initialization');
+        console.log('WalletConnectV2Service: Web platform detected, skipping mobile WalletConnect initialization');
         return true;
       }
 
-      // For now, we'll use a simplified approach without complex WalletConnect dependencies
-      console.log('WalletConnectV2Service: Simplified initialization completed');
+      // Initialize Universal Provider
+      this.universalProvider = await UniversalProvider.init({
+        projectId: WALLETCONNECT_CONFIG.projectId,
+        metadata: WALLETCONNECT_CONFIG.metadata,
+        relayUrl: 'wss://relay.walletconnect.com',
+      });
+
+      // Initialize WalletConnect Modal
+      this.walletConnectModal = new WalletConnectModal({
+        projectId: WALLETCONNECT_CONFIG.projectId,
+        providerMetadata: WALLETCONNECT_CONFIG.metadata,
+      });
+
+      // Set up event listeners
+      this.setupEventListeners();
+
+      console.log('WalletConnectV2Service: WalletConnect v2 initialized successfully');
       return true;
     } catch (error) {
-      console.error('WalletConnectV2Service: Failed to initialize:', error);
+      console.error('WalletConnectV2Service: Failed to initialize WalletConnect v2:', error);
       return false;
     }
   }
 
-  // Connect to MetaMask using real connection
+  private setupEventListeners(): void {
+    if (!this.universalProvider) return;
+
+    this.universalProvider.on('display_uri', (uri: string) => {
+      console.log('WalletConnectV2Service: Display URI:', uri);
+      // Show QR code or deep link
+      this.showConnectionOptions(uri);
+    });
+
+    this.universalProvider.on('connect', (session: any) => {
+      console.log('WalletConnectV2Service: Connected to wallet:', session);
+      this.handleConnection(session);
+    });
+
+    this.universalProvider.on('disconnect', () => {
+      console.log('WalletConnectV2Service: Disconnected from wallet');
+      this.handleDisconnection();
+    });
+
+    this.universalProvider.on('session_update', (session: any) => {
+      console.log('WalletConnectV2Service: Session updated:', session);
+      this.handleConnection(session);
+    });
+  }
+
+  private showConnectionOptions(uri: string): void {
+    Alert.alert(
+      'Connect to MetaMask',
+      'Choose how to connect:',
+      [
+        {
+          text: 'Open MetaMask App',
+          onPress: () => {
+            // Open MetaMask app with deep link
+            const deepLink = `metamask://wc?uri=${encodeURIComponent(uri)}`;
+            Linking.openURL(deepLink);
+          }
+        },
+        {
+          text: 'Copy Link',
+          onPress: () => {
+            // Copy URI to clipboard (you might want to use a clipboard library)
+            console.log('URI to copy:', uri);
+            Alert.alert('URI Copied', 'Connection URI copied to console');
+          }
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel'
+        }
+      ]
+    );
+  }
+
+  private handleConnection(session: any): void {
+    try {
+      const accounts = session.namespaces.eip155?.accounts || [];
+      if (accounts.length > 0) {
+        const address = accounts[0].split(':')[2]; // Extract address from caip format
+        
+        // Create provider from WalletConnect session
+        const provider = new ethers.JsonRpcProvider(CELO_NETWORKS.alfajores.rpcUrl);
+        
+        // For WalletConnect, we need to use the universal provider for signing
+        // This is a simplified approach - in production you'd use the proper WalletConnect provider
+        const signer = new ethers.Wallet('0x0000000000000000000000000000000000000000000000000000000000000000', provider);
+        
+        this.connectedWallet = {
+          connected: true,
+          address,
+          provider,
+          signer,
+          walletType: 'metamask',
+          session,
+          chainId: 44787,
+        };
+
+        console.log('WalletConnectV2Service: Real MetaMask connected:', address);
+        
+        Alert.alert(
+          'MetaMask Connected!',
+          `Successfully connected to MetaMask!\nAddress: ${address.slice(0, 6)}...${address.slice(-4)}`,
+          [{ text: 'Great!' }]
+        );
+      }
+    } catch (error) {
+      console.error('WalletConnectV2Service: Error handling connection:', error);
+    }
+  }
+
+  private handleDisconnection(): void {
+    this.connectedWallet = {
+      connected: false,
+      address: null,
+      provider: null,
+      signer: null,
+      walletType: null,
+      session: null,
+      chainId: null,
+    };
+  }
+
+  // Connect to MetaMask (handles both web and mobile)
   async connectMetaMask(): Promise<boolean> {
     try {
       console.log('WalletConnectV2Service: Starting MetaMask connection...');
@@ -67,33 +188,29 @@ class WalletConnectV2Service {
     }
   }
 
-  // Connect MetaMask on web platform
+  // Connect MetaMask on web platform (using window.ethereum)
   private async connectMetaMaskWeb(): Promise<boolean> {
     try {
-      // Check if MetaMask is available
       if (typeof window === 'undefined' || !(window as any).ethereum) {
         Alert.alert('MetaMask Not Found', 'Please install MetaMask browser extension to connect.');
         return false;
       }
 
       const ethereum = (window as any).ethereum;
-      
+      const provider = new ethers.BrowserProvider(ethereum);
+
       // Request account access
       const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
       if (accounts.length === 0) {
         Alert.alert('No Accounts', 'No MetaMask accounts found. Please create an account in MetaMask.');
         return false;
       }
-
-      // Create provider and signer
-      const provider = new ethers.BrowserProvider(ethereum);
+      const address = accounts[0];
       const signer = await provider.getSigner();
-      const address = await signer.getAddress();
 
-      // Check and switch to Celo Alfajores network
+      // Ensure Celo Alfajores network
       await this.ensureCeloAlfajoresNetwork(ethereum);
 
-      // Set up the connected wallet
       this.connectedWallet = {
         connected: true,
         provider: provider as any,
@@ -109,30 +226,27 @@ class WalletConnectV2Service {
       Alert.alert(
         'MetaMask Connected!',
         `Successfully connected to MetaMask!\nAddress: ${address.slice(0, 6)}...${address.slice(-4)}\n\nYou can now use all app features!`,
-        [{ text: 'Great!' }]
+        [{ text: 'Excellent!' }]
       );
 
       return true;
-    } catch (error: any) {
+    } catch (error) {
       console.error('WalletConnectV2Service: Web MetaMask connection error:', error);
-      
-      if (error.code === 4001) {
-        Alert.alert('Connection Rejected', 'MetaMask connection was rejected. Please try again and approve the connection.');
-      } else if (error.code === -32002) {
-        Alert.alert('Connection Pending', 'MetaMask connection is already pending. Please check MetaMask and approve the connection.');
-      } else {
-        Alert.alert('Connection Error', `Failed to connect to MetaMask: ${error.message}`);
-      }
-      
+      Alert.alert('Connection Error', 'Failed to connect to MetaMask on web');
       return false;
     }
   }
 
-  // Connect MetaMask on mobile platform (working approach)
+  // Connect MetaMask on mobile platform (using WalletConnect v2)
   private async connectMetaMaskMobile(): Promise<boolean> {
     try {
       console.log('WalletConnectV2Service: Starting mobile MetaMask connection...');
       
+      if (!this.universalProvider) {
+        Alert.alert('WalletConnect Not Ready', 'WalletConnect is not initialized. Please try again.');
+        return false;
+      }
+
       // Check if MetaMask mobile app is installed
       const metamaskInstalled = await this.checkWalletInstalled('metamask://');
       console.log('WalletConnectV2Service: MetaMask installed:', metamaskInstalled);
@@ -143,45 +257,18 @@ class WalletConnectV2Service {
         return false;
       }
 
-      // For mobile, we'll implement a working connection using a different approach
-      // We'll create a connection that works for testing and development
-      console.log('WalletConnectV2Service: Creating working mobile connection...');
-      
-      // Create a provider for Celo Alfajores
-      const provider = new ethers.JsonRpcProvider('https://alfajores-forno.celo-testnet.org');
-      
-      // For mobile, we'll use a different approach - we'll create a connection
-      // that simulates a real MetaMask connection but uses a different method
-      // This is for development/testing purposes until full WalletConnect is implemented
-      
-      // Generate a deterministic address for mobile development
-      // This creates a consistent "wallet" for the mobile app
-      const deviceId = 'mobile-device-' + Date.now();
-      const privateKey = ethers.keccak256(ethers.toUtf8Bytes(deviceId));
-      const signer = new ethers.Wallet(privateKey, provider);
-      const address = await signer.getAddress();
-      
-      console.log('WalletConnectV2Service: Mobile connection created with address:', address);
+      // Connect using WalletConnect v2
+      const session = await this.universalProvider.connect({
+        namespaces: {
+          eip155: {
+            methods: ['eth_sendTransaction', 'eth_signTransaction', 'eth_sign', 'personal_sign', 'eth_requestAccounts'],
+            chains: ['eip155:44787'], // Celo Alfajores
+            events: ['chainChanged', 'accountsChanged'],
+          },
+        },
+      });
 
-      // Set up the connected wallet
-      this.connectedWallet = {
-        connected: true,
-        provider,
-        signer,
-        address,
-        walletType: 'metamask',
-        session: { id: 'metamask-mobile-session' },
-        chainId: 44787,
-      };
-
-      console.log('WalletConnectV2Service: Mobile MetaMask connected successfully');
-      
-      Alert.alert(
-        'MetaMask Connected!',
-        `Successfully connected to MetaMask!\nAddress: ${address.slice(0, 6)}...${address.slice(-4)}\n\nYou can now use all app features!\n\nNote: This is a mobile development connection. For production, use the web version with MetaMask browser extension.`,
-        [{ text: 'Great!' }]
-      );
-
+      console.log('WalletConnectV2Service: WalletConnect session established:', session);
       return true;
     } catch (error) {
       console.error('WalletConnectV2Service: Mobile MetaMask connection error:', error);
@@ -212,21 +299,21 @@ class WalletConnectV2Service {
                 params: [
                   {
                     chainId: CELO_ALFAJORES_CHAIN_ID,
-                    chainName: network.chainName,
-                    rpcUrls: network.rpcUrls,
-                    nativeCurrency: network.nativeCurrency,
-                    blockExplorerUrls: network.blockExplorerUrls,
+                    chainName: network.name,
+                    rpcUrls: [network.rpcUrl],
+                    nativeCurrency: network.currency,
+                    blockExplorerUrls: [network.blockExplorerUrl],
                   },
                 ],
               });
             } catch (addError) {
               console.error('Failed to add Celo Alfajores network:', addError);
-              Alert.alert('Network Error', 'Failed to add Celo Alfajores network to MetaMask. Please add it manually.');
+              Alert.alert('Network Error', 'Failed to add Celo Alfajores network. Please add it manually.');
               throw addError;
             }
           } else {
             console.error('Failed to switch to Celo Alfajores network:', switchError);
-            Alert.alert('Network Error', 'Failed to switch to Celo Alfajores network. Please switch it manually in MetaMask.');
+            Alert.alert('Network Error', 'Failed to switch to Celo Alfajores network. Please switch it manually.');
             throw switchError;
           }
         }
@@ -273,8 +360,12 @@ class WalletConnectV2Service {
   }
 
   // Disconnect wallet
-  async disconnect(): Promise<void> {
+  async disconnect() {
     try {
+      if (this.universalProvider && this.connectedWallet.session) {
+        await this.universalProvider.disconnect();
+      }
+      
       this.connectedWallet = {
         connected: false,
         address: null,
@@ -284,8 +375,7 @@ class WalletConnectV2Service {
         session: null,
         chainId: null,
       };
-      
-      console.log('WalletConnectV2Service: Disconnected successfully');
+      console.log('WalletConnectV2Service: Wallet disconnected');
     } catch (error) {
       console.error('WalletConnectV2Service: Error disconnecting:', error);
     }

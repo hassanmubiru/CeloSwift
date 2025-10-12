@@ -115,10 +115,10 @@ const HomeScreen: React.FC = () => {
         setIsConnected(true);
         setAddress(connectionStatus.address);
         
-        // Update CeloService with the mobile wallet provider
+        // Update CeloService with the mobile wallet provider and signer
         if (connectionStatus.provider && connectionStatus.signer) {
-          // Use the mobile wallet provider for Celo operations
-          await CeloService.connectExternalWallet(connectionStatus.provider);
+          // Use the mobile wallet provider and signer for Celo operations
+          await CeloService.connectExternalWallet(connectionStatus.provider, connectionStatus.signer);
         }
         
         // Fetch user data

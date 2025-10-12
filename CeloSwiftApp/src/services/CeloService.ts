@@ -130,16 +130,28 @@ class CeloService {
   }
 
   // Method for connecting with external wallet providers (MetaMask, WalletConnect, etc.)
-  async connectExternalWallet(provider: any): Promise<boolean> {
+  async connectExternalWallet(provider: any, signer?: any): Promise<boolean> {
     try {
-      this.initializeProvider();
-      
-      if (!this.provider) {
-        throw new Error('Provider not initialized');
+      // Use the provided signer if available, otherwise try to get signer from provider
+      if (signer) {
+        this.signer = signer;
+        // Use the provider from the signer if it has one, otherwise use our default provider
+        this.provider = signer.provider || this.provider;
+      } else {
+        // For BrowserProvider (web MetaMask), use getSigner()
+        if (provider.getSigner) {
+          this.signer = await provider.getSigner();
+          this.provider = provider;
+        } else {
+          // For JsonRpcProvider (mobile), we need the signer to be passed separately
+          throw new Error('Signer must be provided for JsonRpcProvider');
+        }
       }
-
-      // Connect to external wallet provider
-      this.signer = await provider.getSigner();
+      
+      // Initialize default provider if not set
+      if (!this.provider) {
+        this.initializeProvider();
+      }
       
       // Initialize contracts
       this.remittanceContract = new ethers.Contract(
