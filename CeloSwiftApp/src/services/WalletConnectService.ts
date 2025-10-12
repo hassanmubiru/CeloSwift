@@ -1,40 +1,24 @@
 import { ethers } from 'ethers';
 import { Alert, Linking, Platform } from 'react-native';
 
-interface WalletConnectConfig {
-  projectId: string;
-  metadata: {
-    name: string;
-    description: string;
-    url: string;
-    icons: string[];
-  };
+interface ConnectionStatus {
+  connected: boolean;
+  address: string | null;
+  provider: ethers.JsonRpcProvider | null;
+  signer: ethers.Wallet | null;
+  walletType: string | null;
+  session: any;
 }
 
 class WalletConnectService {
   private static instance: WalletConnectService;
-  private connectedWallet: {
-    provider: ethers.JsonRpcProvider | null;
-    signer: ethers.Wallet | null;
-    address: string | null;
-    walletType: string | null;
-    session: any | null;
-  } = {
+  private connectedWallet: ConnectionStatus = {
+    connected: false,
+    address: null,
     provider: null,
     signer: null,
-    address: null,
     walletType: null,
     session: null,
-  };
-
-  private config: WalletConnectConfig = {
-    projectId: 'your-walletconnect-project-id', // You'll need to get this from WalletConnect Cloud
-    metadata: {
-      name: 'CeloSwift',
-      description: 'Mobile-first decentralized remittance application on Celo',
-      url: 'https://celoswift.app',
-      icons: ['https://celoswift.app/icon.png'],
-    },
   };
 
   public static getInstance(): WalletConnectService {
@@ -44,47 +28,114 @@ class WalletConnectService {
     return WalletConnectService.instance;
   }
 
-  // Initialize WalletConnect (simplified version for now)
-  async initializeWalletConnect(): Promise<boolean> {
+  // Connect to MetaMask using real connection
+  async connectMetaMask(): Promise<boolean> {
     try {
-      // For now, we'll use a simplified approach
-      // In a full implementation, you'd use @walletconnect/modal-react-native
-      console.log('WalletConnect initialization would happen here');
-      return true;
+      console.log('WalletConnectService: Starting real MetaMask connection...');
+      
+      // Check if we're on web platform
+      if (Platform.OS === 'web') {
+        return await this.connectMetaMaskWeb();
+      } else {
+        return await this.connectMetaMaskMobile();
+      }
     } catch (error) {
-      console.error('Failed to initialize WalletConnect:', error);
+      console.error('WalletConnectService: MetaMask connection error:', error);
+      Alert.alert('Connection Error', 'Failed to connect to MetaMask');
       return false;
     }
   }
 
-  // Connect to MetaMask using WalletConnect
-  async connectMetaMask(): Promise<boolean> {
+  // Connect MetaMask on web platform
+  private async connectMetaMaskWeb(): Promise<boolean> {
     try {
-      console.log('WalletConnectService: Starting MetaMask connection...');
       // Check if MetaMask is available
-      const metamaskInstalled = await this.checkWalletInstalled('metamask://');
-      console.log('WalletConnectService: MetaMask installed:', metamaskInstalled);
+      if (typeof window === 'undefined' || !(window as any).ethereum) {
+        Alert.alert('MetaMask Not Found', 'Please install MetaMask browser extension to connect.');
+        return false;
+      }
+
+      const ethereum = (window as any).ethereum;
       
-      if (metamaskInstalled) {
-        // For now, show instructions for manual connection
-        // In a full implementation, this would use WalletConnect
-        console.log('WalletConnectService: Showing MetaMask connection dialog...');
-        
-        // Simple, direct connection approach
-        console.log('WalletConnectService: Starting direct MetaMask connection...');
-        
-        // Just connect directly using simulation - this will work immediately
-        const success = await this.simulateConnection('metamask');
-        console.log('WalletConnectService: Direct connection result:', success);
-        return success;
+      // Request account access
+      const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+      if (accounts.length === 0) {
+        Alert.alert('No Accounts', 'No MetaMask accounts found. Please create an account in MetaMask.');
+        return false;
+      }
+
+      // Create provider and signer
+      const provider = new ethers.BrowserProvider(ethereum);
+      const signer = await provider.getSigner();
+      const address = await signer.getAddress();
+
+      // Check and switch to Celo Alfajores network
+      await this.ensureCeloAlfajoresNetwork(ethereum);
+
+      // Set up the connected wallet
+      this.connectedWallet = {
+        provider: provider as any, // Type conversion for compatibility
+        signer: signer as any,
+        address,
+        walletType: 'metamask',
+        session: { id: 'metamask-web-session' },
+      };
+
+      console.log('WalletConnectService: MetaMask connected successfully:', address);
+      
+      Alert.alert(
+        'MetaMask Connected!',
+        `Successfully connected to MetaMask!\nAddress: ${address.slice(0, 6)}...${address.slice(-4)}\n\nYou can now use all app features!`,
+        [{ text: 'Great!' }]
+      );
+
+      return true;
+    } catch (error: any) {
+      console.error('WalletConnectService: Web MetaMask connection error:', error);
+      
+      if (error.code === 4001) {
+        Alert.alert('Connection Rejected', 'MetaMask connection was rejected. Please try again and approve the connection.');
+      } else if (error.code === -32002) {
+        Alert.alert('Connection Pending', 'MetaMask connection is already pending. Please check MetaMask and approve the connection.');
       } else {
-        console.log('WalletConnectService: MetaMask not installed, showing install option');
+        Alert.alert('Connection Error', `Failed to connect to MetaMask: ${error.message}`);
+      }
+      
+      return false;
+    }
+  }
+
+  // Connect MetaMask on mobile platform
+  private async connectMetaMaskMobile(): Promise<boolean> {
+    try {
+      // Check if MetaMask mobile app is installed
+      const metamaskInstalled = await this.checkWalletInstalled('metamask://');
+      
+      if (!metamaskInstalled) {
         this.showInstallMetaMask();
         return false;
       }
+
+      // For mobile, we'll use deep linking to open MetaMask
+      // In a full implementation, this would use WalletConnect v2
+      Alert.alert(
+        'MetaMask Mobile Connection',
+        'To connect MetaMask on mobile:\n\n1. Open MetaMask app\n2. Go to Settings > Networks\n3. Add Celo Alfajores network:\n   - Network Name: Celo Alfajores\n   - RPC URL: https://alfajores-forno.celo-testnet.org\n   - Chain ID: 44787\n   - Currency Symbol: CELO\n   - Block Explorer: https://alfajores.celoscan.io\n\n4. Return to this app and try connecting again\n\nNote: Full mobile integration requires WalletConnect v2 implementation.',
+        [
+          { 
+            text: 'Open MetaMask', 
+            onPress: () => {
+              Linking.openURL('metamask://');
+            }
+          },
+          { text: 'Cancel', style: 'cancel' }
+        ]
+      );
+
+      return false; // Return false since we can't establish a real connection yet
     } catch (error) {
-      console.error('WalletConnectService: MetaMask connection error:', error);
-      Alert.alert('Error', 'Failed to connect to MetaMask');
+      console.error('WalletConnectService: Mobile MetaMask connection error:', error);
+      Alert.alert('Connection Error', 'Failed to connect to MetaMask on mobile');
       return false;
     }
   }
@@ -94,38 +145,26 @@ class WalletConnectService {
     try {
       const trustInstalled = await this.checkWalletInstalled('trust://');
       
-      if (trustInstalled) {
-        return new Promise((resolve) => {
-          Alert.alert(
-            'Trust Wallet Connection',
-            'To connect Trust Wallet to CeloSwift:\n\n1. Open Trust Wallet app\n2. Go to DApp browser\n3. Navigate to CeloSwift or scan QR code\n4. Add Celo Alfajores network if needed\n5. Approve the connection request',
-            [
-              { 
-                text: 'Cancel', 
-                style: 'cancel',
-                onPress: () => resolve(false)
-              },
-              { 
-                text: 'Open Trust Wallet', 
-                onPress: () => {
-                  this.openTrustWalletApp();
-                  resolve(false);
-                }
-              },
-              { 
-                text: 'Simulate Connection', 
-                onPress: async () => {
-                  const success = await this.simulateConnection('trust');
-                  resolve(success);
-                }
-              }
-            ]
-          );
-        });
-      } else {
+      if (!trustInstalled) {
         this.showInstallTrustWallet();
         return false;
       }
+
+      Alert.alert(
+        'Trust Wallet Connection',
+        'Trust Wallet connection requires WalletConnect v2 implementation. This feature is coming soon.\n\nFor now, please use MetaMask or connect via web browser.',
+        [
+          { 
+            text: 'Open Trust Wallet', 
+            onPress: () => {
+              Linking.openURL('trust://');
+            }
+          },
+          { text: 'OK' }
+        ]
+      );
+
+      return false;
     } catch (error) {
       console.error('Trust Wallet connection error:', error);
       Alert.alert('Error', 'Failed to connect to Trust Wallet');
@@ -138,42 +177,85 @@ class WalletConnectService {
     try {
       const coinbaseInstalled = await this.checkWalletInstalled('cbwallet://');
       
-      if (coinbaseInstalled) {
-        return new Promise((resolve) => {
-          Alert.alert(
-            'Coinbase Wallet Connection',
-            'To connect Coinbase Wallet to CeloSwift:\n\n1. Open Coinbase Wallet app\n2. Go to DApp browser\n3. Navigate to CeloSwift or scan QR code\n4. Add Celo Alfajores network if needed\n5. Approve the connection request',
-            [
-              { 
-                text: 'Cancel', 
-                style: 'cancel',
-                onPress: () => resolve(false)
-              },
-              { 
-                text: 'Open Coinbase Wallet', 
-                onPress: () => {
-                  this.openCoinbaseWalletApp();
-                  resolve(false);
-                }
-              },
-              { 
-                text: 'Simulate Connection', 
-                onPress: async () => {
-                  const success = await this.simulateConnection('coinbase');
-                  resolve(success);
-                }
-              }
-            ]
-          );
-        });
-      } else {
+      if (!coinbaseInstalled) {
         this.showInstallCoinbaseWallet();
         return false;
       }
+
+      Alert.alert(
+        'Coinbase Wallet Connection',
+        'Coinbase Wallet connection requires WalletConnect v2 implementation. This feature is coming soon.\n\nFor now, please use MetaMask or connect via web browser.',
+        [
+          { 
+            text: 'Open Coinbase Wallet', 
+            onPress: () => {
+              Linking.openURL('cbwallet://');
+            }
+          },
+          { text: 'OK' }
+        ]
+      );
+
+      return false;
     } catch (error) {
       console.error('Coinbase Wallet connection error:', error);
       Alert.alert('Error', 'Failed to connect to Coinbase Wallet');
       return false;
+    }
+  }
+
+  // Ensure Celo Alfajores network is active
+  private async ensureCeloAlfajoresNetwork(ethereum: any): Promise<void> {
+    const CELO_ALFAJORES_CHAIN_ID = '0xaef3'; // 44787 in hex
+    const CELO_ALFAJORES_RPC_URL = 'https://alfajores-forno.celo-testnet.org';
+    const CELO_ALFAJORES_CHAIN_NAME = 'Celo Alfajores Testnet';
+    const CELO_ALFAJORES_CURRENCY_SYMBOL = 'CELO';
+    const CELO_ALFAJORES_BLOCK_EXPLORER_URL = 'https://alfajores.celoscan.io';
+
+    try {
+      const chainId = await ethereum.request({ method: 'eth_chainId' });
+
+      if (chainId !== CELO_ALFAJORES_CHAIN_ID) {
+        try {
+          await ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: CELO_ALFAJORES_CHAIN_ID }],
+          });
+        } catch (switchError: any) {
+          // This error code indicates that the chain has not been added to MetaMask.
+          if (switchError.code === 4902) {
+            try {
+              await ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [
+                  {
+                    chainId: CELO_ALFAJORES_CHAIN_ID,
+                    chainName: CELO_ALFAJORES_CHAIN_NAME,
+                    rpcUrls: [CELO_ALFAJORES_RPC_URL],
+                    nativeCurrency: {
+                      name: CELO_ALFAJORES_CURRENCY_SYMBOL,
+                      symbol: CELO_ALFAJORES_CURRENCY_SYMBOL,
+                      decimals: 18,
+                    },
+                    blockExplorerUrls: [CELO_ALFAJORES_BLOCK_EXPLORER_URL],
+                  },
+                ],
+              });
+            } catch (addError) {
+              console.error('Failed to add Celo Alfajores network:', addError);
+              Alert.alert('Network Error', 'Failed to add Celo Alfajores network to MetaMask. Please add it manually.');
+              throw addError;
+            }
+          } else {
+            console.error('Failed to switch to Celo Alfajores network:', switchError);
+            Alert.alert('Network Error', 'Failed to switch to Celo Alfajores network. Please switch it manually in MetaMask.');
+            throw switchError;
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error ensuring Celo Alfajores network:', error);
+      throw error;
     }
   }
 
@@ -183,45 +265,8 @@ class WalletConnectService {
       const canOpen = await Linking.canOpenURL(deepLink);
       return canOpen;
     } catch (error) {
-      console.log('Error checking wallet installation:', error);
+      console.error('Error checking wallet installation:', error);
       return false;
-    }
-  }
-
-  // Open MetaMask app with return deep link
-  private async openMetaMaskApp(): Promise<void> {
-    try {
-      // Try to open MetaMask with a deep link that could potentially return to our app
-      // This is a more sophisticated approach for future WalletConnect integration
-      const deepLink = 'metamask://';
-      await Linking.openURL(deepLink);
-      
-      // For now, we'll rely on the user manually returning to the app
-      // In a full WalletConnect implementation, this would handle the return flow
-      console.log('MetaMask app opened. User will need to return manually.');
-    } catch (error) {
-      console.error('Failed to open MetaMask app:', error);
-      Alert.alert('Error', 'Failed to open MetaMask app');
-    }
-  }
-
-  // Open Trust Wallet app
-  private async openTrustWalletApp(): Promise<void> {
-    try {
-      await Linking.openURL('trust://');
-    } catch (error) {
-      console.error('Failed to open Trust Wallet app:', error);
-      Alert.alert('Error', 'Failed to open Trust Wallet app');
-    }
-  }
-
-  // Open Coinbase Wallet app
-  private async openCoinbaseWalletApp(): Promise<void> {
-    try {
-      await Linking.openURL('cbwallet://');
-    } catch (error) {
-      console.error('Failed to open Coinbase Wallet app:', error);
-      Alert.alert('Error', 'Failed to open Coinbase Wallet app');
     }
   }
 
@@ -282,145 +327,22 @@ class WalletConnectService {
     );
   }
 
-  // Attempt real connection with MetaMask
-  async attemptRealConnection(walletType: string): Promise<boolean> {
-    try {
-      console.log('WalletConnectService: Attempting real connection for', walletType);
-      
-      // For now, we'll simulate a real connection attempt
-      // In a full implementation, this would use WalletConnect or direct MetaMask integration
-      
-      // Check if we can detect MetaMask is available
-      const metamaskAvailable = await this.checkWalletInstalled('metamask://');
-      
-      if (!metamaskAvailable) {
-        console.log('WalletConnectService: MetaMask not available for real connection');
-        return false;
-      }
-      
-      // For now, we'll use a different approach - try to connect using a more realistic method
-      // This would normally involve WalletConnect or direct MetaMask SDK integration
-      
-      Alert.alert(
-        'Real Connection Attempt',
-        'Attempting to connect to MetaMask...\n\nNote: Full WalletConnect integration is required for real connections. For now, using simulation.',
-        [{ text: 'OK' }]
-      );
-      
-      // For demonstration, we'll fall back to simulation but with a different key
-      // In production, this would be the actual wallet connection
-      const provider = new ethers.JsonRpcProvider('https://alfajores-forno.celo-testnet.org');
-      
-      // Use a different demo key to simulate a "real" connection
-      const realDemoPrivateKey = '0x50625608E728cad827066dD78F5B4e8d203619F3'; // Different demo key
-      const signer = new ethers.Wallet(realDemoPrivateKey, provider);
-      const address = await signer.getAddress();
-      
-      this.connectedWallet = {
-        provider,
-        signer,
-        address,
-        walletType,
-        session: { id: 'real-connection-session' },
-      };
-      
-      console.log('WalletConnectService: Real connection established with address:', address);
-      
-      Alert.alert(
-        'MetaMask Connected!',
-        `Successfully connected to MetaMask!\nAddress: ${address.slice(0, 6)}...${address.slice(-4)}\n\nYou can now use all app features with your MetaMask wallet!`,
-        [{ text: 'Excellent!' }]
-      );
-      
-      return true;
-    } catch (error) {
-      console.error('WalletConnectService: Real connection error:', error);
-      return false;
-    }
-  }
-
-  // Simulate connection (for testing purposes)
-  async simulateConnection(walletType: string): Promise<boolean> {
-    try {
-      console.log('WalletConnectService: Starting simulation for', walletType);
-      
-      // Create provider and signer directly
-      const provider = new ethers.JsonRpcProvider('https://alfajores-forno.celo-testnet.org');
-      console.log('WalletConnectService: Provider created');
-      
-      // Use a demo private key for testing
-      const demoPrivateKey = '0x7ce93d1cea9c8e3281af7c8e51b724c437711b0f1aafdb28a2a17fa8b317368b';
-      const signer = new ethers.Wallet(demoPrivateKey, provider);
-      const address = await signer.getAddress();
-      console.log('WalletConnectService: Signer created, address:', address);
-
-      // Set up the connected wallet
-      this.connectedWallet = {
-        provider,
-        signer,
-        address,
-        walletType,
-        session: { id: 'demo-session' },
-      };
-      console.log('WalletConnectService: Wallet connected successfully');
-
-      // Show success message
-      Alert.alert(
-        'MetaMask Connected!',
-        `Successfully connected to MetaMask!\nAddress: ${address.slice(0, 6)}...${address.slice(-4)}\n\nYou can now use all app features!`,
-        [{ text: 'Excellent!' }]
-      );
-
-      return true;
-    } catch (error) {
-      console.error('WalletConnectService: Connection error:', error);
-      Alert.alert('Connection Error', `Failed to connect: ${error.message}`);
-      return false;
-    }
-  }
-
   // Get connection status
-  getConnectionStatus(): {
-    connected: boolean;
-    address: string | null;
-    walletType: string | null;
-    provider: ethers.JsonRpcProvider | null;
-    signer: ethers.Wallet | null;
-  } {
-    return {
-      connected: !!this.connectedWallet.signer,
-      address: this.connectedWallet.address,
-      walletType: this.connectedWallet.walletType,
-      provider: this.connectedWallet.provider,
-      signer: this.connectedWallet.signer,
-    };
+  getConnectionStatus(): ConnectionStatus {
+    return this.connectedWallet;
   }
 
   // Disconnect wallet
-  disconnect(): void {
+  disconnect() {
     this.connectedWallet = {
+      connected: false,
+      address: null,
       provider: null,
       signer: null,
-      address: null,
       walletType: null,
       session: null,
     };
-    console.log('WalletConnect wallet disconnected');
-  }
-
-  // Get account balance
-  async getBalance(): Promise<string> {
-    if (!this.connectedWallet.provider || !this.connectedWallet.address) {
-      return '0';
-    }
-
-    try {
-      const balance = await this.connectedWallet.provider.getBalance(this.connectedWallet.address);
-      return ethers.formatEther(balance);
-    } catch (error) {
-      console.error('Error getting balance:', error);
-      return '0';
-    }
+    console.log('WalletConnect service disconnected');
   }
 }
 
