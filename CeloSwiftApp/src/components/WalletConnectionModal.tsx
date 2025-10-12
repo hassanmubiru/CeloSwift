@@ -46,17 +46,23 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
   };
 
   const handleWalletPress = async (wallet: WalletInfo) => {
+    console.log('WalletConnectionModal: handleWalletPress called with wallet:', wallet.id);
     if (wallet.installed) {
       // Wallet is installed, try to connect using mobile service
       if (wallet.id === 'metamask') {
+        console.log('WalletConnectionModal: Attempting MetaMask connection...');
         try {
           const success = await MobileWalletService.connectMetaMask();
+          console.log('WalletConnectionModal: MetaMask connection result:', success);
           if (success) {
+            console.log('WalletConnectionModal: MetaMask connected successfully, calling onConnect');
             onConnect(wallet.id);
             onClose();
+          } else {
+            console.log('WalletConnectionModal: MetaMask connection failed or cancelled');
           }
         } catch (error) {
-          console.error('MetaMask connection failed:', error);
+          console.error('WalletConnectionModal: MetaMask connection failed:', error);
         }
       } else if (wallet.id === 'coinbase') {
         try {

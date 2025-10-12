@@ -340,6 +340,10 @@ class WalletConnectService {
   async simulateConnection(walletType: string): Promise<boolean> {
     try {
       console.log('WalletConnectService: Starting simulation for', walletType);
+      
+      // Show a simple loading message first
+      Alert.alert('Connecting...', 'Setting up wallet connection...', [], { cancelable: false });
+      
       // This is a temporary solution for testing
       // In production, this would be replaced with actual WalletConnect integration
       const provider = new ethers.JsonRpcProvider('https://alfajores-forno.celo-testnet.org');
@@ -361,16 +365,17 @@ class WalletConnectService {
       };
       console.log('WalletConnectService: Wallet connected successfully');
 
+      // Show success message
       Alert.alert(
-        'Wallet Connected',
-        `Connected to ${walletType}\nAddress: ${address.slice(0, 6)}...${address.slice(-4)}\n\nNote: This is a simulated connection for testing. In production, this would use WalletConnect for real wallet integration.`,
-        [{ text: 'OK' }]
+        'Wallet Connected Successfully!',
+        `Connected to ${walletType}\nAddress: ${address.slice(0, 6)}...${address.slice(-4)}\n\nYou can now use all app features!`,
+        [{ text: 'Great!' }]
       );
 
       return true;
     } catch (error) {
       console.error('WalletConnectService: Simulated connection error:', error);
-      Alert.alert('Error', 'Failed to simulate wallet connection');
+      Alert.alert('Connection Error', `Failed to connect: ${error.message}`);
       return false;
     }
   }

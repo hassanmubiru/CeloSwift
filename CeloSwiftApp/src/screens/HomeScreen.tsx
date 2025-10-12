@@ -92,18 +92,22 @@ const HomeScreen: React.FC = () => {
   };
 
   const handleConnectWallet = () => {
+    console.log('HomeScreen: handleConnectWallet called');
     setIsLoading(true);
     // Simulate a brief loading state for better UX
     setTimeout(() => {
+      console.log('HomeScreen: Setting showWalletModal to true');
       setIsLoading(false);
       setShowWalletModal(true);
     }, 300);
   };
 
   const handleWalletConnect = async (walletType: string) => {
+    console.log('HomeScreen: handleWalletConnect called with walletType:', walletType);
     if (walletType === 'metamask' || walletType === 'coinbase' || walletType === 'trust') {
       // Check if we actually connected using mobile service
       const connectionStatus = MobileWalletService.getConnectionStatus();
+      console.log('HomeScreen: MobileWalletService connection status:', connectionStatus);
       
       if (connectionStatus.connected && connectionStatus.address) {
         // Successfully connected
