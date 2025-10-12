@@ -108,31 +108,38 @@ class WalletConnectService {
   // Connect MetaMask on mobile platform
   private async connectMetaMaskMobile(): Promise<boolean> {
     try {
+      console.log('WalletConnectService: Starting mobile MetaMask connection...');
+      
       // Check if MetaMask mobile app is installed
       const metamaskInstalled = await this.checkWalletInstalled('metamask://');
+      console.log('WalletConnectService: MetaMask installed:', metamaskInstalled);
       
       if (!metamaskInstalled) {
+        console.log('WalletConnectService: MetaMask not installed, showing install option');
         this.showInstallMetaMask();
         return false;
       }
 
-      // For mobile, we'll use deep linking to open MetaMask
-      // In a full implementation, this would use WalletConnect v2
+      // For mobile MetaMask connection, we need to use WalletConnect v2
+      // Since we don't have WalletConnect v2 implemented yet, we'll show instructions
+      // and return false to indicate that real connection is not available
+      console.log('WalletConnectService: MetaMask mobile requires WalletConnect v2 implementation');
+      
       Alert.alert(
         'MetaMask Mobile Connection',
-        'To connect MetaMask on mobile:\n\n1. Open MetaMask app\n2. Go to Settings > Networks\n3. Add Celo Alfajores network:\n   - Network Name: Celo Alfajores\n   - RPC URL: https://alfajores-forno.celo-testnet.org\n   - Chain ID: 44787\n   - Currency Symbol: CELO\n   - Block Explorer: https://alfajores.celoscan.io\n\n4. Return to this app and try connecting again\n\nNote: Full mobile integration requires WalletConnect v2 implementation.',
+        'To connect MetaMask on mobile, you need to:\n\n1. Install MetaMask mobile app\n2. Set up Celo Alfajores network in MetaMask\n3. Use WalletConnect v2 for connection\n\nFor now, please use MetaMask browser extension on desktop for full functionality.',
         [
           { 
-            text: 'Open MetaMask', 
+            text: 'Open MetaMask App', 
             onPress: () => {
               Linking.openURL('metamask://');
             }
           },
-          { text: 'Cancel', style: 'cancel' }
+          { text: 'OK' }
         ]
       );
 
-      return false; // Return false since we can't establish a real connection yet
+      return false; // Return false since real mobile connection requires WalletConnect v2
     } catch (error) {
       console.error('WalletConnectService: Mobile MetaMask connection error:', error);
       Alert.alert('Connection Error', 'Failed to connect to MetaMask on mobile');
