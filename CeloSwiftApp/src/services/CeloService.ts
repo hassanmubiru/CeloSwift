@@ -387,7 +387,7 @@ class CeloService {
   }
 
   async getExchangeRate(fromCurrency: string, toCurrency: string): Promise<number> {
-    // Mock exchange rates for demo - in production, use a real API
+    // Exchange rates - in production, use a real API
     const rates: { [key: string]: number } = {
       'USD_UGX': 3700,
       'USD_KES': 150,
