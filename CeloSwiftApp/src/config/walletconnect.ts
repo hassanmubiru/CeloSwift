@@ -30,9 +30,17 @@ export const WALLETCONNECT_CONFIG = {
         'personal_sign',
         'eth_signTypedData',
         'eth_signTypedData_v4',
+        'eth_requestAccounts',
+        'eth_accounts',
+        'eth_chainId',
+        'eth_getBalance',
+        'eth_getTransactionCount',
+        'eth_getTransactionReceipt',
+        'wallet_switchEthereumChain',
+        'wallet_addEthereumChain',
       ],
       chains: ['eip155:44787'], // Celo Alfajores chain ID
-      events: ['chainChanged', 'accountsChanged'],
+      events: ['chainChanged', 'accountsChanged', 'connect', 'disconnect'],
     },
   },
   
@@ -46,6 +54,11 @@ export const WALLETCONNECT_CONFIG = {
         'eth_getBalance',
         'eth_getTransactionCount',
         'eth_getTransactionReceipt',
+        'eth_blockNumber',
+        'eth_getBlockByNumber',
+        'eth_getTransactionByHash',
+        'eth_estimateGas',
+        'eth_gasPrice',
       ],
       chains: ['eip155:44787', 'eip155:42220'], // Celo Alfajores and Mainnet
       events: ['chainChanged', 'accountsChanged', 'connect', 'disconnect'],
@@ -53,13 +66,61 @@ export const WALLETCONNECT_CONFIG = {
   },
 };
 
+// MetaMask specific configuration
+export const METAMASK_CONFIG = {
+  // Deep link schemes for mobile MetaMask
+  deepLinks: {
+    ios: 'metamask://',
+    android: 'metamask://',
+  },
+  
+  // Store URLs for MetaMask installation
+  storeUrls: {
+    ios: 'https://apps.apple.com/app/metamask/id1438144202',
+    android: 'https://play.google.com/store/apps/details?id=io.metamask',
+  },
+  
+  // MetaMask specific methods
+  methods: [
+    'eth_requestAccounts',
+    'eth_accounts',
+    'eth_chainId',
+    'eth_sendTransaction',
+    'eth_signTransaction',
+    'eth_sign',
+    'personal_sign',
+    'eth_signTypedData',
+    'eth_signTypedData_v4',
+    'wallet_switchEthereumChain',
+    'wallet_addEthereumChain',
+    'eth_getBalance',
+    'eth_getTransactionCount',
+    'eth_getTransactionReceipt',
+  ],
+  
+  // Supported events
+  events: [
+    'chainChanged',
+    'accountsChanged',
+    'connect',
+    'disconnect',
+  ],
+};
+
 // Celo network configuration
 export const CELO_NETWORKS = {
   alfajores: {
     chainId: 44787,
     chainName: 'Celo Alfajores Testnet',
+    rpcUrl: 'https://alfajores-forno.celo-testnet.org',
     rpcUrls: ['https://alfajores-forno.celo-testnet.org'],
+    blockExplorerUrl: 'https://alfajores.celoscan.io',
     blockExplorerUrls: ['https://alfajores.celoscan.io'],
+    currency: {
+      name: 'CELO',
+      symbol: 'CELO',
+      decimals: 18,
+    },
     nativeCurrency: {
       name: 'CELO',
       symbol: 'CELO',
@@ -69,8 +130,15 @@ export const CELO_NETWORKS = {
   mainnet: {
     chainId: 42220,
     chainName: 'Celo',
+    rpcUrl: 'https://forno.celo.org',
     rpcUrls: ['https://forno.celo.org'],
+    blockExplorerUrl: 'https://celoscan.io',
     blockExplorerUrls: ['https://celoscan.io'],
+    currency: {
+      name: 'CELO',
+      symbol: 'CELO',
+      decimals: 18,
+    },
     nativeCurrency: {
       name: 'CELO',
       symbol: 'CELO',
