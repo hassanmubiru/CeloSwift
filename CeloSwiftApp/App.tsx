@@ -52,6 +52,8 @@ export default function App() {
                 iconName = focused ? 'time' : 'time-outline';
               } else if (route.name === 'Profile') {
                 iconName = focused ? 'person' : 'person-outline';
+              } else if (route.name === 'Test') {
+                iconName = focused ? 'bug' : 'bug-outline';
               } else {
                 iconName = 'help-outline';
               }
