@@ -1,11 +1,11 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import DirectMetaMaskTest from '../components/DirectMetaMaskTest';
+import MobileMetaMaskTest from '../components/MobileMetaMaskTest';
 
 const TestMetaMaskScreen: React.FC = () => {
   return (
     <View style={styles.container}>
-      <DirectMetaMaskTest />
+      <MobileMetaMaskTest />
     </View>
   );
 };
