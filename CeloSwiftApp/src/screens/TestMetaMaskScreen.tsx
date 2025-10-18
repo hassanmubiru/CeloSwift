@@ -1,11 +1,11 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import SimpleMobileTest from '../components/SimpleMobileTest';
+import RealMetaMaskTest from '../components/RealMetaMaskTest';
 
 const TestMetaMaskScreen: React.FC = () => {
   return (
     <View style={styles.container}>
-      <SimpleMobileTest />
+      <RealMetaMaskTest />
     </View>
   );
 };
