@@ -28,7 +28,7 @@ const WalletTestPanel: React.FC = () => {
   const initializeService = async () => {
     try {
       addLog('Initializing MetaMask service...');
-      const success = await ImprovedMobileMetaMaskService.initialize();
+      const success = await WalletService.initialize();
       if (success) {
         addLog('✅ MetaMask service initialized successfully');
       } else {
@@ -40,7 +40,7 @@ const WalletTestPanel: React.FC = () => {
   };
 
   const checkConnectionStatus = () => {
-    const status = ImprovedMobileMetaMaskService.getConnectionStatus();
+    const status = WalletService.getConnectionStatus();
     setConnectionInfo(status);
     setIsConnected(status.connected);
     addLog(`Connection status: ${status.connected ? 'Connected' : 'Not connected'}`);
@@ -58,7 +58,7 @@ const WalletTestPanel: React.FC = () => {
     addLog('🔄 Starting MetaMask connection...');
     
     try {
-      const success = await ImprovedMobileMetaMaskService.connect();
+      const success = await WalletService.connect();
       
       if (success) {
         addLog('✅ MetaMask connected successfully!');
@@ -78,7 +78,7 @@ const WalletTestPanel: React.FC = () => {
     addLog('🔄 Disconnecting from MetaMask...');
     
     try {
-      await ImprovedMobileMetaMaskService.disconnect();
+      await WalletService.disconnect();
       addLog('✅ Disconnected from MetaMask');
       checkConnectionStatus();
     } catch (error: any) {
@@ -93,7 +93,7 @@ const WalletTestPanel: React.FC = () => {
     addLog('🔄 Updating balance...');
     
     try {
-      await ImprovedMobileMetaMaskService.updateBalance();
+      await WalletService.updateBalance();
       checkConnectionStatus();
       addLog('✅ Balance updated successfully');
     } catch (error: any) {

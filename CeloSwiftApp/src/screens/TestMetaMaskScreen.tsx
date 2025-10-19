@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import SimpleMetaMaskTest from '../components/SimpleMetaMaskTest';
+import WalletTestPanel from '../components/WalletTestPanel';
 
 const TestMetaMaskScreen: React.FC = () => {
   return (
