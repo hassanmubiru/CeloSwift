@@ -613,7 +613,8 @@ class CeloSepoliaWalletService extends EventEmitter {
   // Clear connection data
   private async clearConnectionData(): Promise<void> {
     try {
-      await AsyncStorage.removeItem(this.STORAGE_KEYS.CONNECTION_DATA);
+      // Use in-memory storage for now
+      delete this.memoryStorage[this.STORAGE_KEYS.CONNECTION_DATA];
     } catch (error) {
       console.error('CeloSepoliaWalletService: Clear connection data error:', error);
     }
