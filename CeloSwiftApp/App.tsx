@@ -8,7 +8,7 @@ import { StyleSheet, SafeAreaView } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import ThirdwebCeloService from './src/services/ThirdwebCeloService';
+import CeloSepoliaWalletService from './src/services/CeloSepoliaWalletService';
 
 // Import screens
 import HomeScreen from './src/screens/HomeScreen';
@@ -25,10 +25,10 @@ export default function App() {
   useEffect(() => {
     const initializeWalletService = async () => {
       try {
-        await ThirdwebCeloService.initialize();
-        console.log('App: ThirdwebCeloService initialized successfully');
+        await CeloSepoliaWalletService.initialize();
+        console.log('App: CeloSepoliaWalletService initialized successfully');
       } catch (error) {
-        console.error('App: Failed to initialize ThirdwebCeloService:', error);
+        console.error('App: Failed to initialize CeloSepoliaWalletService:', error);
       }
     };
 
