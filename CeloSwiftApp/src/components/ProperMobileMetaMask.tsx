@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import SimpleWalletService from '../services/SimpleWalletService';
+import ImprovedMobileMetaMaskService from '../services/ImprovedMobileMetaMaskService';
 
 const ProperMobileMetaMask: React.FC = () => {
   const [status, setStatus] = useState<any>(null);
