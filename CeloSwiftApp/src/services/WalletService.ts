@@ -17,21 +17,21 @@ interface ConnectionStatus {
   connectedAt?: number;
 }
 
-class ImprovedMobileMetaMaskService extends EventEmitter {
-  private static instance: ImprovedMobileMetaMaskService;
+class WalletService extends EventEmitter {
+  private static instance: WalletService;
   private connection: ConnectionStatus = {
     connected: false,
   };
 
   private readonly STORAGE_KEYS = {
-    CONNECTION_DATA: 'improved_mobile_metamask_connection',
+    CONNECTION_DATA: 'wallet_connection_data',
   };
 
-  public static getInstance(): ImprovedMobileMetaMaskService {
-    if (!ImprovedMobileMetaMaskService.instance) {
-      ImprovedMobileMetaMaskService.instance = new ImprovedMobileMetaMaskService();
+  public static getInstance(): WalletService {
+    if (!WalletService.instance) {
+      WalletService.instance = new WalletService();
     }
-    return ImprovedMobileMetaMaskService.instance;
+    return WalletService.instance;
   }
 
   // Initialize the service
@@ -532,4 +532,4 @@ class ImprovedMobileMetaMaskService extends EventEmitter {
   }
 }
 
-export default ImprovedMobileMetaMaskService.getInstance();
+export default WalletService.getInstance();
