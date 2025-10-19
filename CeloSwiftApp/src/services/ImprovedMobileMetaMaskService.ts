@@ -278,8 +278,8 @@ class ImprovedMobileMetaMaskService extends EventEmitter {
   // Show address input dialog for mobile
   private showAddressInputDialog(resolve: (value: boolean) => void): void {
     Alert.prompt(
-      'Enter MetaMask Address',
-      'Please enter your MetaMask wallet address:\n\n(You can find this in MetaMask app under "Account details")',
+      'Enter Your MetaMask Address',
+      'To complete the connection, please enter your MetaMask wallet address.\n\nHow to find your address:\n1. Open MetaMask app\n2. Tap on your account name at the top\n3. Copy your wallet address\n4. Paste it here\n\nThis is how mobile connections work - no popup needed!',
       [
         { 
           text: 'Cancel', 
