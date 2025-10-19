@@ -9,9 +9,9 @@ import {
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import ImprovedMobileMetaMaskService from '../services/ImprovedMobileMetaMaskService';
+import WalletService from '../services/WalletService';
 
-const SimpleMetaMaskTest: React.FC = () => {
+const WalletTestPanel: React.FC = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [connectionInfo, setConnectionInfo] = useState<any>(null);
@@ -369,4 +369,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SimpleMetaMaskTest;
+export default WalletTestPanel;
