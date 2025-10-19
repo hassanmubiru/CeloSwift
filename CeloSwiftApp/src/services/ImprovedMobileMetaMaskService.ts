@@ -260,11 +260,11 @@ class ImprovedMobileMetaMaskService extends EventEmitter {
   // Show connection confirmation dialog
   private showConnectionConfirmation(resolve: (value: boolean) => void): void {
     Alert.alert(
-      'Confirm Connection',
-      'Have you opened MetaMask and are ready to connect?\n\nPlease make sure:\n• MetaMask is unlocked\n• You\'re on Celo Alfajores network\n• You\'re ready to provide your wallet address',
+      'Ready to Connect?',
+      'Now we need to complete the connection by entering your wallet address.\n\nThis is normal for mobile connections - there\'s no popup because MetaMask runs as a separate app.\n\nPlease make sure:\n• MetaMask is unlocked\n• You\'re on Celo Alfajores network\n• You have your wallet address ready',
       [
         { 
-          text: 'I\'m Ready', 
+          text: 'Enter My Address', 
           onPress: () => this.showAddressInputDialog(resolve)
         },
         { 
