@@ -43,6 +43,7 @@
     "@react-native-async-storage/async-storage": "^1.23.1",
     "@react-navigation/bottom-tabs": "^6.5.11",
     "@react-navigation/native": "^6.1.9",
+    "@thirdweb-dev/sdk": "^4.0.99",
     "assert": "^2.1.0",
     "ethers": "^6.15.0",
     "expo": "~51.0.28",
