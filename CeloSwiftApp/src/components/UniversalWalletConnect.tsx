@@ -11,9 +11,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import ThirdwebWalletService from '../services/ThirdwebWalletService';
+import UniversalWalletService from '../services/UniversalWalletService';
 
-const ThirdwebWalletConnect: React.FC = () => {
+const UniversalWalletConnect: React.FC = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [connectionInfo, setConnectionInfo] = useState<any>(null);
@@ -33,12 +33,12 @@ const ThirdwebWalletConnect: React.FC = () => {
 
   const initializeService = async () => {
     try {
-      addLog('🚀 Initializing Thirdweb SDK...');
-      const success = await ThirdwebWalletService.initialize();
+      addLog('🚀 Initializing Universal Wallet Service...');
+      const success = await UniversalWalletService.initialize();
       if (success) {
-        addLog('✅ Thirdweb SDK initialized successfully');
+        addLog('✅ Universal Wallet Service initialized');
       } else {
-        addLog('❌ Failed to initialize Thirdweb SDK');
+        addLog('❌ Failed to initialize Universal Wallet Service');
       }
     } catch (error) {
       addLog(`❌ Initialization error: ${error}`);
@@ -46,7 +46,7 @@ const ThirdwebWalletConnect: React.FC = () => {
   };
 
   const checkConnectionStatus = () => {
-    const status = ThirdwebWalletService.getConnectionStatus();
+    const status = UniversalWalletService.getConnectionStatus();
     setConnectionInfo(status);
     setIsConnected(status.connected);
     addLog(`📊 Connection status: ${status.connected ? 'Connected' : 'Not connected'}`);
@@ -54,13 +54,13 @@ const ThirdwebWalletConnect: React.FC = () => {
 
   const connectWallet = async () => {
     setIsLoading(true);
-    addLog('🔄 Starting Thirdweb wallet connection...');
+    addLog('🔄 Starting universal wallet connection...');
     
     try {
-      const success = await ThirdwebWalletService.connect();
+      const success = await UniversalWalletService.connect();
       
       if (success) {
-        addLog('✅ Wallet connected successfully via Thirdweb!');
+        addLog('✅ Wallet connected successfully!');
         checkConnectionStatus();
       } else {
         addLog('❌ Wallet connection failed or cancelled');
@@ -77,7 +77,7 @@ const ThirdwebWalletConnect: React.FC = () => {
     addLog('🔄 Disconnecting wallet...');
     
     try {
-      await ThirdwebWalletService.disconnect();
+      await UniversalWalletService.disconnect();
       addLog('✅ Disconnected successfully');
       checkConnectionStatus();
     } catch (error: any) {
@@ -92,29 +92,11 @@ const ThirdwebWalletConnect: React.FC = () => {
     addLog('🔄 Updating balance...');
     
     try {
-      await ThirdwebWalletService.updateBalance();
+      await UniversalWalletService.updateBalance();
       checkConnectionStatus();
       addLog('✅ Balance updated');
     } catch (error: any) {
       addLog(`❌ Balance update error: ${error.message || error}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const switchNetwork = async () => {
-    setIsLoading(true);
-    addLog('🔄 Switching to Celo Alfajores network...');
-    
-    try {
-      const success = await ThirdwebWalletService.switchToCeloNetwork();
-      if (success) {
-        addLog('✅ Network switched successfully');
-      } else {
-        addLog('❌ Network switch failed');
-      }
-    } catch (error: any) {
-      addLog(`❌ Network switch error: ${error.message || error}`);
     } finally {
       setIsLoading(false);
     }
@@ -139,11 +121,11 @@ const ThirdwebWalletConnect: React.FC = () => {
       >
         <View style={styles.headerContent}>
           <View style={styles.iconContainer}>
-            <Ionicons name="cube" size={32} color="#FFFFFF" />
+            <Ionicons name="wallet" size={32} color="#FFFFFF" />
           </View>
           <View style={styles.headerText}>
-            <Text style={styles.title}>Thirdweb Wallet Connect</Text>
-            <Text style={styles.subtitle}>Universal Wallet Integration</Text>
+            <Text style={styles.title}>Universal Wallet Connect</Text>
+            <Text style={styles.subtitle}>Seamless MetaMask Integration</Text>
           </View>
           <View style={styles.statusBadge}>
             <Ionicons 
@@ -162,16 +144,16 @@ const ThirdwebWalletConnect: React.FC = () => {
         {!isConnected ? (
           <View style={styles.disconnectedState}>
             <View style={styles.infoCard}>
-              <Ionicons name="information-circle" size={24} color="#9C27B0" />
+              <Ionicons name="information-circle" size={24} color="#2196F3" />
               <View style={styles.infoText}>
-                <Text style={styles.infoTitle}>Thirdweb Integration</Text>
+                <Text style={styles.infoTitle}>Universal Wallet Connection</Text>
                 <Text style={styles.infoDescription}>
-                  Thirdweb provides seamless wallet connections across all platforms:
-                  {'\n'}• Universal wallet support (500+ wallets)
-                  {'\n'}• Automatic deep linking
+                  This service provides seamless MetaMask connections across all platforms:
+                  {'\n'}• Automatic deep linking on mobile
+                  {'\n'}• Seamless app return after connection
+                  {'\n'}• Professional error handling
                   {'\n'}• Cross-platform compatibility
-                  {'\n'}• Built-in error handling
-                  {'\n'}• No manual configuration needed
+                  {'\n'}• Zero configuration required
                 </Text>
               </View>
             </View>
@@ -187,19 +169,19 @@ const ThirdwebWalletConnect: React.FC = () => {
                 <Ionicons name="log-in" size={24} color="#FFFFFF" />
               )}
               <Text style={styles.buttonText}>
-                {isLoading ? 'Connecting...' : 'Connect with Thirdweb'}
+                {isLoading ? 'Connecting...' : 'Connect MetaMask'}
               </Text>
             </TouchableOpacity>
 
             <View style={styles.benefitsCard}>
-              <Text style={styles.benefitsTitle}>Why Thirdweb?</Text>
+              <Text style={styles.benefitsTitle}>Key Benefits</Text>
               <Text style={styles.benefitsText}>
                 ✅ Handles all MetaMask connection issues automatically
                 {'\n'}✅ Works on web, iOS, and Android seamlessly
-                {'\n'}✅ Supports 500+ wallets out of the box
-                {'\n'}✅ Built-in deep linking and app return
-                {'\n'}✅ Professional error handling
+                {'\n'}✅ Automatic deep linking and app return
+                {'\n'}✅ Professional error handling and user feedback
                 {'\n'}✅ No complex configuration required
+                {'\n'}✅ Built-in network switching to Celo
               </Text>
             </View>
           </View>
@@ -240,15 +222,6 @@ const ThirdwebWalletConnect: React.FC = () => {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.actionButton}
-                onPress={switchNetwork}
-                disabled={isLoading}
-              >
-                <Ionicons name="swap-horizontal" size={20} color="#FFFFFF" />
-                <Text style={styles.actionButtonText}>Switch Network</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
                 style={[styles.actionButton, styles.disconnectButton]}
                 onPress={disconnectWallet}
                 disabled={isLoading}
@@ -279,12 +252,12 @@ const ThirdwebWalletConnect: React.FC = () => {
         </View>
 
         <View style={styles.helpSection}>
-          <Text style={styles.helpTitle}>Thirdweb Benefits</Text>
+          <Text style={styles.helpTitle}>How It Works</Text>
           <Text style={styles.helpText}>
-            <Text style={styles.helpBold}>🎯 Solves All MetaMask Issues:</Text> Automatic deep linking, app return, and error handling
-            {'\n\n'}<Text style={styles.helpBold}>🌐 Universal Support:</Text> Works on web, iOS, Android with same code
-            {'\n\n'}<Text style={styles.helpBold}>🔧 Zero Configuration:</Text> No complex setup or manual deep linking
-            {'\n\n'}<Text style={styles.helpBold}>🛡️ Built-in Security:</Text> Professional error handling and validation
+            <Text style={styles.helpBold}>🌐 Web Platform:</Text> Direct MetaMask extension integration with automatic network switching
+            {'\n\n'}<Text style={styles.helpBold}>📱 Mobile Platform:</Text> Automatic deep linking to MetaMask app with seamless return
+            {'\n\n'}<Text style={styles.helpBold}>🔄 Connection Flow:</Text> Professional error handling with multiple fallback options
+            {'\n\n'}<Text style={styles.helpBold}>🛡️ Reliability:</Text> Built-in timeout handling and connection persistence
           </Text>
         </View>
       </View>
@@ -349,12 +322,12 @@ const styles = StyleSheet.create({
   },
   infoCard: {
     flexDirection: 'row',
-    backgroundColor: '#F3E5F5',
+    backgroundColor: '#E3F2FD',
     padding: 16,
     borderRadius: 12,
     marginBottom: 24,
     borderLeftWidth: 4,
-    borderLeftColor: '#9C27B0',
+    borderLeftColor: '#2196F3',
   },
   infoText: {
     flex: 1,
@@ -363,18 +336,18 @@ const styles = StyleSheet.create({
   infoTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#7B1FA2',
+    color: '#1976D2',
     marginBottom: 8,
   },
   infoDescription: {
     fontSize: 14,
-    color: '#7B1FA2',
+    color: '#1976D2',
     lineHeight: 20,
   },
   connectButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#9C27B0',
+    backgroundColor: '#35D07F',
     paddingHorizontal: 32,
     paddingVertical: 16,
     borderRadius: 30,
@@ -454,28 +427,26 @@ const styles = StyleSheet.create({
   actionButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    flexWrap: 'wrap',
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#9C27B0',
-    paddingHorizontal: 16,
+    backgroundColor: '#35D07F',
+    paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 25,
-    marginHorizontal: 4,
-    marginVertical: 4,
+    flex: 1,
+    marginHorizontal: 8,
     justifyContent: 'center',
-    minWidth: 120,
   },
   disconnectButton: {
     backgroundColor: '#FF6B6B',
   },
   actionButtonText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '600',
-    marginLeft: 6,
+    marginLeft: 8,
   },
   logsSection: {
     backgroundColor: '#FFFFFF',
@@ -547,4 +518,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ThirdwebWalletConnect;
+export default UniversalWalletConnect;

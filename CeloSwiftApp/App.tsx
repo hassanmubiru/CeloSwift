@@ -8,7 +8,7 @@ import { StyleSheet, SafeAreaView } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import ThirdwebWalletService from './src/services/ThirdwebWalletService';
+import UniversalWalletService from './src/services/UniversalWalletService';
 
 // Import screens
 import HomeScreen from './src/screens/HomeScreen';
@@ -25,10 +25,10 @@ export default function App() {
   useEffect(() => {
     const initializeWalletService = async () => {
       try {
-        await ThirdwebWalletService.initialize();
-        console.log('App: ThirdwebWalletService initialized successfully');
+        await UniversalWalletService.initialize();
+        console.log('App: UniversalWalletService initialized successfully');
       } catch (error) {
-        console.error('App: Failed to initialize ThirdwebWalletService:', error);
+        console.error('App: Failed to initialize UniversalWalletService:', error);
       }
     };
 
