@@ -5,7 +5,7 @@ import WalletTestPanel from '../components/WalletTestPanel';
 const TestMetaMaskScreen: React.FC = () => {
   return (
     <View style={styles.container}>
-      <SimpleMetaMaskTest />
+      <WalletTestPanel />
     </View>
   );
 };

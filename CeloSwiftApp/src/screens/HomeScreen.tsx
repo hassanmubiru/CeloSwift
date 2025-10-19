@@ -14,7 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import CeloService, { TOKEN_ADDRESSES } from '../services/CeloService';
-import ImprovedMobileMetaMaskService from '../services/ImprovedMobileMetaMaskService';
+import WalletService from '../services/WalletService';
 import BalanceCard from '../components/BalanceCard';
 import QuickActions from '../components/QuickActions';
 import RecentTransactions from '../components/RecentTransactions';
