@@ -16,7 +16,7 @@ import SendScreen from './src/screens/SendScreen';
 import ReceiveScreen from './src/screens/ReceiveScreen';
 import HistoryScreen from './src/screens/HistoryScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
-import TestMetaMaskScreen from './src/screens/TestMetaMaskScreen';
+import WalletTestScreen from './src/screens/WalletTestScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -109,8 +109,8 @@ export default function App() {
           />
           <Tab.Screen 
             name="Test" 
-            component={TestMetaMaskScreen}
-            options={{ title: 'MetaMask Test' }}
+            component={WalletTestScreen}
+            options={{ title: 'Wallet Test' }}
           />
         </Tab.Navigator>
       </NavigationContainer>

@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import WalletTestPanel from '../components/WalletTestPanel';
 
-const TestMetaMaskScreen: React.FC = () => {
+const WalletTestScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <WalletTestPanel />
@@ -16,4 +16,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default TestMetaMaskScreen;
+export default WalletTestScreen;
