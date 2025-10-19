@@ -29,15 +29,15 @@ class ThirdwebCeloService extends EventEmitter {
 
   // Celo Sepolia network configuration
   private readonly CELO_SEPOLIA = {
-    chainId: 44787, // Note: This is actually Celo Alfajores chainId, Celo Sepolia uses different chainId
-    chainName: 'Celo Sepolia',
-    rpcUrls: ['https://sepolia-forno.celo-testnet.org'],
+    chainId: 11142220, // Correct Celo Sepolia chain ID
+    chainName: 'Celo Sepolia Testnet',
+    rpcUrls: ['https://11142220.rpc.thirdweb.com'],
     nativeCurrency: {
       name: 'CELO',
-      symbol: 'CELO',
+      symbol: 'CELO-S',
       decimals: 18,
     },
-    blockExplorerUrls: ['https://sepolia-blockscout.celo-testnet.org'],
+    blockExplorerUrls: ['https://celo-sepolia.blockscout.com'],
   };
 
   public static getInstance(): ThirdwebCeloService {
