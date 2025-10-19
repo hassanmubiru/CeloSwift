@@ -17,7 +17,7 @@ const ProperMobileMetaMask: React.FC = () => {
 
   useEffect(() => {
     const checkConnection = () => {
-      const connectionStatus = ImprovedMobileMetaMaskService.getConnectionStatus();
+      const connectionStatus = WalletService.getConnectionStatus();
       setStatus(connectionStatus);
     };
     checkConnection();
@@ -32,9 +32,9 @@ const ProperMobileMetaMask: React.FC = () => {
   const connectWithMetaMask = async () => {
     setIsLoading(true);
     try {
-      const success = await ImprovedMobileMetaMaskService.connect();
+      const success = await WalletService.connect();
       if (success) {
-        setStatus(ImprovedMobileMetaMaskService.getConnectionStatus());
+        setStatus(WalletService.getConnectionStatus());
       } else {
         Alert.alert('Connection Failed', 'Could not connect to MetaMask. Please try again.');
       }
@@ -47,8 +47,8 @@ const ProperMobileMetaMask: React.FC = () => {
   };
 
   const disconnect = async () => {
-    await ImprovedMobileMetaMaskService.disconnect();
-    setStatus(ImprovedMobileMetaMaskService.getConnectionStatus());
+    await WalletService.disconnect();
+    setStatus(WalletService.getConnectionStatus());
   };
 
   const testAction = () => {
