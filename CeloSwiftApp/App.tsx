@@ -8,7 +8,7 @@ import { StyleSheet, SafeAreaView } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import SimpleWalletService from './src/services/SimpleWalletService';
+import ImprovedMobileMetaMaskService from './src/services/ImprovedMobileMetaMaskService';
 
 // Import screens
 import HomeScreen from './src/screens/HomeScreen';
@@ -25,8 +25,8 @@ export default function App() {
   useEffect(() => {
     const initializeWalletService = async () => {
       try {
-        await SimpleWalletService.initialize();
-        console.log('App: SimpleWalletService initialized successfully');
+        await ImprovedMobileMetaMaskService.initialize();
+        console.log('App: ImprovedMobileMetaMaskService initialized successfully');
       } catch (error) {
         console.error('App: Failed to initialize SimpleWalletService:', error);
       }
