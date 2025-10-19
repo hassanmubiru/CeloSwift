@@ -8,7 +8,7 @@ import { StyleSheet, SafeAreaView } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import ImprovedMobileMetaMaskService from './src/services/ImprovedMobileMetaMaskService';
+import WalletService from './src/services/WalletService';
 
 // Import screens
 import HomeScreen from './src/screens/HomeScreen';

@@ -63,7 +63,7 @@ const HomeScreen: React.FC = () => {
       setNetworkInfo(network);
       
       // Check if we're already connected to a wallet
-      const walletConnectionStatus = ImprovedMobileMetaMaskService.getConnectionStatus();
+      const walletConnectionStatus = WalletService.getConnectionStatus();
       if (walletConnectionStatus && walletConnectionStatus.address) {
         setIsConnected(true);
         setAddress(walletConnectionStatus.address);
@@ -106,11 +106,11 @@ const HomeScreen: React.FC = () => {
     if (walletType === 'metamask') {
       try {
         // Use the unified MetaMask service
-        const success = await ImprovedMobileMetaMaskService.connect();
+        const success = await WalletService.connect();
         
         if (success) {
-          const connectionStatus = ImprovedMobileMetaMaskService.getConnectionStatus();
-          console.log('HomeScreen: ImprovedMobileMetaMaskService connection status:', connectionStatus);
+          const connectionStatus = WalletService.getConnectionStatus();
+          console.log('HomeScreen: WalletService connection status:', connectionStatus);
           
           if (connectionStatus && connectionStatus.address) {
             // Successfully connected
@@ -177,7 +177,7 @@ const HomeScreen: React.FC = () => {
 
   const handleDisconnectWallet = async () => {
     try {
-      await ImprovedMobileMetaMaskService.disconnect();
+      await WalletService.disconnect();
       CeloService.disconnect();
       setIsConnected(false);
       setAddress('');
