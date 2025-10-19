@@ -3,11 +3,12 @@ import { View, StyleSheet } from 'react-native';
 import WalletTestPanel from '../components/WalletTestPanel';
 import EnhancedMobileWallet from '../components/EnhancedMobileWallet';
 import UniversalWalletConnect from '../components/UniversalWalletConnect';
+import ThirdwebCeloConnect from '../components/ThirdwebCeloConnect';
 
 const WalletTestScreen: React.FC = () => {
   return (
     <View style={styles.container}>
-      <UniversalWalletConnect />
+      <ThirdwebCeloConnect />
     </View>
   );
 };
