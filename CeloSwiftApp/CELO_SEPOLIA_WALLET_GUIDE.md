@@ -12,6 +12,7 @@ I've successfully implemented a **professional wallet connection service** that 
 - ✅ **Block Explorer** - `https://celo-sepolia.blockscout.com`
 - ✅ **Native Token** - CELO-S (Celo Sepolia token)
 - ✅ **Modern Testnet** - Latest Celo development network
+- ✅ **No Thirdweb Dependencies** - Clean implementation with ethers v6
 
 ### **2. Professional Wallet Service**
 - ✅ **Cross-platform compatibility** - Web, iOS, Android
@@ -19,6 +20,7 @@ I've successfully implemented a **professional wallet connection service** that 
 - ✅ **Built-in error handling** - User-friendly error messages
 - ✅ **AsyncStorage integration** - Persistent connection state
 - ✅ **Professional UI** - Beautiful gradient design
+- ✅ **Clean Dependencies** - No bundling conflicts with ethers v6
 
 ## 🛠 **Technical Implementation**
 
