@@ -1,7 +1,7 @@
 import { Alert, Linking, Platform } from 'react-native';
 import { ethers } from 'ethers';
 import { EventEmitter } from 'events';
-// import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface ConnectionStatus {
   connected: boolean;
@@ -26,8 +26,6 @@ class CeloSepoliaWalletService extends EventEmitter {
     CONNECTION_DATA: 'celo_sepolia_wallet_connection',
   };
 
-  // Simple in-memory storage for now (replace with AsyncStorage later)
-  private memoryStorage: { [key: string]: string } = {};
 
   // Celo Sepolia network configuration
   private readonly CELO_SEPOLIA = {
@@ -580,8 +578,7 @@ class CeloSepoliaWalletService extends EventEmitter {
         connectedAt: this.connection.connectedAt,
       };
       
-      // Use in-memory storage for now
-      this.memoryStorage[this.STORAGE_KEYS.CONNECTION_DATA] = JSON.stringify(data);
+      await AsyncStorage.setItem(this.STORAGE_KEYS.CONNECTION_DATA, JSON.stringify(data));
     } catch (error) {
       console.error('CeloSepoliaWalletService: Save connection data error:', error);
     }
@@ -590,8 +587,7 @@ class CeloSepoliaWalletService extends EventEmitter {
   // Load connection data
   private async loadConnectionData(): Promise<void> {
     try {
-      // Use in-memory storage for now
-      const data = this.memoryStorage[this.STORAGE_KEYS.CONNECTION_DATA];
+      const data = await AsyncStorage.getItem(this.STORAGE_KEYS.CONNECTION_DATA);
       if (data) {
         const parsed = JSON.parse(data);
         if (parsed.connected && parsed.address) {
