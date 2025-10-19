@@ -37,12 +37,12 @@ class WalletService extends EventEmitter {
   // Initialize the service
   async initialize(): Promise<boolean> {
     try {
-      console.log('ImprovedMobileMetaMaskService: Initializing...');
+      console.log('WalletService: Initializing...');
       await this.loadConnectionData();
-      console.log('ImprovedMobileMetaMaskService: Initialization completed');
+      console.log('WalletService: Initialization completed');
       return true;
     } catch (error) {
-      console.error('ImprovedMobileMetaMaskService: Initialization failed:', error);
+      console.error('WalletService: Initialization failed:', error);
       return false;
     }
   }
@@ -50,7 +50,7 @@ class WalletService extends EventEmitter {
   // Main connect method
   async connect(): Promise<boolean> {
     try {
-      console.log('ImprovedMobileMetaMaskService: Starting connection...');
+      console.log('WalletService: Starting connection...');
       
       if (Platform.OS === 'web') {
         return await this.connectWeb();
@@ -58,7 +58,7 @@ class WalletService extends EventEmitter {
         return await this.connectMobile();
       }
     } catch (error) {
-      console.error('ImprovedMobileMetaMaskService: Connection error:', error);
+      console.error('WalletService: Connection error:', error);
       this.handleError('Connection failed', error);
       return false;
     }
@@ -78,7 +78,7 @@ class WalletService extends EventEmitter {
 
       const ethereum = (window as any).ethereum;
       
-      console.log('ImprovedMobileMetaMaskService: MetaMask detected, requesting accounts...');
+      console.log('WalletService: MetaMask detected, requesting accounts...');
 
       const accounts = await ethereum.request({ 
         method: 'eth_requestAccounts' 
@@ -116,7 +116,7 @@ class WalletService extends EventEmitter {
       await this.saveConnectionData();
       this.emit('connected', this.connection);
 
-      console.log('ImprovedMobileMetaMaskService: Web connection successful:', address);
+      console.log('WalletService: Web connection successful:', address);
       
       Alert.alert(
         'MetaMask Connected!',
@@ -127,7 +127,7 @@ class WalletService extends EventEmitter {
       return true;
 
     } catch (error: any) {
-      console.error('ImprovedMobileMetaMaskService: Web connection error:', error);
+      console.error('WalletService: Web connection error:', error);
       
       if (error.code === 4001) {
         throw new Error('User rejected the connection request');
@@ -169,7 +169,7 @@ class WalletService extends EventEmitter {
   // Open MetaMask app with deep linking
   private async openMetaMaskApp(resolve: (value: boolean) => void): Promise<void> {
     try {
-      console.log('ImprovedMobileMetaMaskService: Attempting to open MetaMask app...');
+      console.log('WalletService: Attempting to open MetaMask app...');
       
       // Check if MetaMask app is installed
       const isInstalled = await this.checkMetaMaskInstalled();
@@ -226,7 +226,7 @@ class WalletService extends EventEmitter {
         );
       }
     } catch (error) {
-      console.error('ImprovedMobileMetaMaskService: Error opening MetaMask app:', error);
+      console.error('WalletService: Error opening MetaMask app:', error);
       this.showConnectionConfirmation(resolve);
     }
   }
@@ -236,10 +236,10 @@ class WalletService extends EventEmitter {
     try {
       const metamaskUrl = 'metamask://';
       const canOpen = await Linking.canOpenURL(metamaskUrl);
-      console.log('ImprovedMobileMetaMaskService: MetaMask installed:', canOpen);
+      console.log('WalletService: MetaMask installed:', canOpen);
       return canOpen;
     } catch (error) {
-      console.error('ImprovedMobileMetaMaskService: Error checking MetaMask installation:', error);
+      console.error('WalletService: Error checking MetaMask installation:', error);
       return false;
     }
   }
@@ -304,7 +304,7 @@ class WalletService extends EventEmitter {
         return;
       }
 
-      console.log('ImprovedMobileMetaMaskService: Connecting with address:', address);
+      console.log('WalletService: Connecting with address:', address);
 
       // Create provider for Celo Alfajores
       const provider = new ethers.JsonRpcProvider(CELO_NETWORKS.alfajores.rpcUrl);
@@ -336,7 +336,7 @@ class WalletService extends EventEmitter {
       // Emit connection event
       this.emit('connected', this.connection);
 
-      console.log('ImprovedMobileMetaMaskService: Mobile connection successful:', address);
+      console.log('WalletService: Mobile connection successful:', address);
 
       Alert.alert(
         'MetaMask Connected!',
@@ -347,7 +347,7 @@ class WalletService extends EventEmitter {
       resolve(true);
 
     } catch (error) {
-      console.error('ImprovedMobileMetaMaskService: Error connecting with address:', error);
+      console.error('WalletService: Error connecting with address:', error);
       Alert.alert('Connection Error', 'Failed to connect with the provided address. Please check the address and try again.');
       resolve(false);
     }
@@ -360,7 +360,7 @@ class WalletService extends EventEmitter {
       const celoChainId = '0x' + CELO_NETWORKS.alfajores.chainId.toString(16);
 
       if (chainId !== celoChainId) {
-        console.log('ImprovedMobileMetaMaskService: Switching to Celo Alfajores network...');
+        console.log('WalletService: Switching to Celo Alfajores network...');
         
         try {
           await ethereum.request({
@@ -385,7 +385,7 @@ class WalletService extends EventEmitter {
         }
       }
     } catch (error) {
-      console.error('ImprovedMobileMetaMaskService: Network switching error:', error);
+      console.error('WalletService: Network switching error:', error);
       throw new Error('Failed to switch to Celo network');
     }
   }
@@ -421,7 +421,7 @@ class WalletService extends EventEmitter {
 
   // Handle errors
   private handleError(message: string, error: any): void {
-    console.error(`ImprovedMobileMetaMaskService: ${message}:`, error);
+    console.error(`WalletService: ${message}:`, error);
     
     const errorMessage = error?.message || error?.toString() || 'Unknown error';
     
@@ -460,9 +460,9 @@ class WalletService extends EventEmitter {
       this.connection = { connected: false };
       await this.clearConnectionData();
       this.emit('disconnected');
-      console.log('ImprovedMobileMetaMaskService: Disconnected successfully');
+      console.log('WalletService: Disconnected successfully');
     } catch (error) {
-      console.error('ImprovedMobileMetaMaskService: Disconnect error:', error);
+      console.error('WalletService: Disconnect error:', error);
     }
   }
 
@@ -479,7 +479,7 @@ class WalletService extends EventEmitter {
       
       await AsyncStorage.setItem(this.STORAGE_KEYS.CONNECTION_DATA, JSON.stringify(data));
     } catch (error) {
-      console.error('ImprovedMobileMetaMaskService: Save connection data error:', error);
+      console.error('WalletService: Save connection data error:', error);
     }
   }
 
@@ -501,7 +501,7 @@ class WalletService extends EventEmitter {
         }
       }
     } catch (error) {
-      console.error('ImprovedMobileMetaMaskService: Load connection data error:', error);
+      console.error('WalletService: Load connection data error:', error);
     }
   }
 
@@ -510,7 +510,7 @@ class WalletService extends EventEmitter {
     try {
       await AsyncStorage.removeItem(this.STORAGE_KEYS.CONNECTION_DATA);
     } catch (error) {
-      console.error('ImprovedMobileMetaMaskService: Clear connection data error:', error);
+      console.error('WalletService: Clear connection data error:', error);
     }
   }
 
@@ -527,7 +527,7 @@ class WalletService extends EventEmitter {
       await this.saveConnectionData();
       this.emit('balanceUpdated', this.connection.balance);
     } catch (error) {
-      console.error('ImprovedMobileMetaMaskService: Update balance error:', error);
+      console.error('WalletService: Update balance error:', error);
     }
   }
 }
