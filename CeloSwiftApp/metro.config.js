@@ -15,6 +15,9 @@ config.resolver.alias = {
 // Add polyfills to resolver
 config.resolver.platforms = ['ios', 'android', 'native', 'web'];
 
+// Ensure React Native modules are resolved properly
+config.resolver.resolverMainFields = ['react-native', 'browser', 'main'];
+
 // Configure transformer for better compatibility
 config.transformer = {
   ...config.transformer,
