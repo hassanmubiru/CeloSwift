@@ -590,7 +590,8 @@ class CeloSepoliaWalletService extends EventEmitter {
   // Load connection data
   private async loadConnectionData(): Promise<void> {
     try {
-      const data = await AsyncStorage.getItem(this.STORAGE_KEYS.CONNECTION_DATA);
+      // Use in-memory storage for now
+      const data = this.memoryStorage[this.STORAGE_KEYS.CONNECTION_DATA];
       if (data) {
         const parsed = JSON.parse(data);
         if (parsed.connected && parsed.address) {
