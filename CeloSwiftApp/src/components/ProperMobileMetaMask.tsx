@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import WalletConnectV2Service from '../services/WalletConnectV2Service';
+import SimpleWalletService from '../services/SimpleWalletService';
 
 const ProperMobileMetaMask: React.FC = () => {
   const [status, setStatus] = useState<any>(null);
@@ -17,7 +17,7 @@ const ProperMobileMetaMask: React.FC = () => {
 
   useEffect(() => {
     const checkConnection = () => {
-      const connectionStatus = WalletConnectV2Service.getConnectionStatus();
+      const connectionStatus = SimpleWalletService.getConnectionStatus();
       setStatus(connectionStatus);
     };
     checkConnection();
@@ -32,9 +32,9 @@ const ProperMobileMetaMask: React.FC = () => {
   const connectWithMetaMask = async () => {
     setIsLoading(true);
     try {
-      const success = await WalletConnectV2Service.connectMetaMask();
+      const success = await SimpleWalletService.connect();
       if (success) {
-        setStatus(WalletConnectV2Service.getConnectionStatus());
+        setStatus(SimpleWalletService.getConnectionStatus());
       } else {
         Alert.alert('Connection Failed', 'Could not connect to MetaMask. Please try again.');
       }
@@ -47,8 +47,8 @@ const ProperMobileMetaMask: React.FC = () => {
   };
 
   const disconnect = async () => {
-    await WalletConnectV2Service.disconnect();
-    setStatus(WalletConnectV2Service.getConnectionStatus());
+    await SimpleWalletService.disconnect();
+    setStatus(SimpleWalletService.getConnectionStatus());
   };
 
   const testAction = () => {

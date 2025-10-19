@@ -10,8 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import WalletDetectionService, { WalletInfo } from '../services/WalletDetectionService';
-import Web3ProviderService from '../services/Web3ProviderService';
-import MobileWalletService from '../services/MobileWalletService';
+import SimpleWalletService from '../services/SimpleWalletService';
 
 interface WalletConnectionModalProps {
   visible: boolean;
@@ -52,7 +51,7 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
       if (wallet.id === 'metamask') {
         console.log('WalletConnectionModal: Attempting MetaMask connection...');
         try {
-          const success = await MobileWalletService.connectMetaMask();
+          const success = await SimpleWalletService.connect();
           console.log('WalletConnectionModal: MetaMask connection result:', success);
           if (success) {
             console.log('WalletConnectionModal: MetaMask connected successfully, calling onConnect');
@@ -64,30 +63,13 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
         } catch (error) {
           console.error('WalletConnectionModal: MetaMask connection failed:', error);
         }
-      } else if (wallet.id === 'coinbase') {
-        try {
-          const success = await MobileWalletService.connectCoinbaseWallet();
-          if (success) {
-            onConnect(wallet.id);
-            onClose();
-          }
-        } catch (error) {
-          console.error('Coinbase Wallet connection failed:', error);
-        }
-      } else if (wallet.id === 'trust') {
-        try {
-          const success = await MobileWalletService.connectTrustWallet();
-          if (success) {
-            onConnect(wallet.id);
-            onClose();
-          }
-        } catch (error) {
-          console.error('Trust Wallet connection failed:', error);
-        }
       } else {
-        // For other wallets, just trigger the connection flow
-        onConnect(wallet.id);
-        onClose();
+        // For other wallets, show instructions
+        Alert.alert(
+          `${wallet.name} Support`,
+          `${wallet.name} wallet connection is not yet implemented. Please use MetaMask for now.`,
+          [{ text: 'OK' }]
+        );
       }
     } else {
       // Wallet not installed, show download option

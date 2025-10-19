@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import WalletDetectionService, { WalletInfo } from '../services/WalletDetectionService';
-import WalletConnectV2Service from '../services/WalletConnectV2Service';
+import SimpleWalletService from '../services/SimpleWalletService';
 
 interface WalletConnectModalProps {
   visible: boolean;
@@ -57,7 +57,7 @@ const WalletConnectModal: React.FC<WalletConnectModalProps> = ({
         
         if (wallet.id === 'metamask') {
           console.log('WalletConnectModal: Attempting MetaMask connection...');
-          success = await WalletConnectV2Service.connectMetaMask();
+          success = await SimpleWalletService.connect();
           console.log('WalletConnectModal: MetaMask connection result:', success);
         } else if (wallet.id === 'coinbase') {
           // For now, show instructions for Coinbase Wallet

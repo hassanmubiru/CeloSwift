@@ -62,11 +62,11 @@ const HomeScreen: React.FC = () => {
       const network = await CeloService.getNetworkInfo();
       setNetworkInfo(network);
       
-      // Check if we're already connected to a mobile wallet
-      const mobileConnectionStatus = MobileWalletService.getConnectionStatus();
-      if (mobileConnectionStatus && mobileConnectionStatus.address) {
+      // Check if we're already connected to a wallet
+      const walletConnectionStatus = SimpleWalletService.getConnectionStatus();
+      if (walletConnectionStatus && walletConnectionStatus.address) {
         setIsConnected(true);
-        setAddress(mobileConnectionStatus.address);
+        setAddress(walletConnectionStatus.address);
         await fetchUserData();
       }
     } catch (error) {
@@ -177,8 +177,7 @@ const HomeScreen: React.FC = () => {
 
   const handleDisconnectWallet = async () => {
     try {
-      MobileWalletService.disconnect();
-      Web3ProviderService.disconnect();
+      await SimpleWalletService.disconnect();
       CeloService.disconnect();
       setIsConnected(false);
       setAddress('');
