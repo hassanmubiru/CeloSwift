@@ -146,7 +146,7 @@ class ImprovedMobileMetaMaskService extends EventEmitter {
     return new Promise((resolve) => {
       Alert.alert(
         'MetaMask Mobile Connection',
-        'Choose how you want to connect your MetaMask wallet:',
+        'MetaMask popups don\'t work on mobile devices. Instead, we\'ll help you connect your MetaMask wallet using one of these methods:',
         [
           { 
             text: 'Cancel', 
@@ -193,11 +193,11 @@ class ImprovedMobileMetaMaskService extends EventEmitter {
       
       if (canOpen) {
         Alert.alert(
-          'Opening MetaMask',
-          'MetaMask app will now open. Please:\n\n1. Unlock your wallet\n2. Make sure you\'re on Celo Alfajores network\n3. Return to this app and confirm connection',
+          'Opening MetaMask App',
+          'MetaMask app will now open. This is the correct way to connect on mobile - no popup will appear in this app.\n\nPlease follow these steps:\n\n1. MetaMask app will open\n2. Unlock your wallet if needed\n3. Make sure you\'re on Celo Alfajores network\n4. Return to this app when ready',
           [
             { 
-              text: 'Open MetaMask', 
+              text: 'Open MetaMask App', 
               onPress: async () => {
                 try {
                   await Linking.openURL(metamaskUrl);
