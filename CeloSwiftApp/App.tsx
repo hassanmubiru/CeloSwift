@@ -25,8 +25,8 @@ export default function App() {
   useEffect(() => {
     const initializeWalletService = async () => {
       try {
-        await ImprovedMobileMetaMaskService.initialize();
-        console.log('App: ImprovedMobileMetaMaskService initialized successfully');
+        await WalletService.initialize();
+        console.log('App: WalletService initialized successfully');
       } catch (error) {
         console.error('App: Failed to initialize SimpleWalletService:', error);
       }
