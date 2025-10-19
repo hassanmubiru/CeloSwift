@@ -58,7 +58,7 @@ const SimpleMetaMaskTest: React.FC = () => {
     addLog('🔄 Starting MetaMask connection...');
     
     try {
-      const success = await SimpleWalletService.connect();
+      const success = await ImprovedMobileMetaMaskService.connect();
       
       if (success) {
         addLog('✅ MetaMask connected successfully!');
@@ -78,7 +78,7 @@ const SimpleMetaMaskTest: React.FC = () => {
     addLog('🔄 Disconnecting from MetaMask...');
     
     try {
-      await SimpleWalletService.disconnect();
+      await ImprovedMobileMetaMaskService.disconnect();
       addLog('✅ Disconnected from MetaMask');
       checkConnectionStatus();
     } catch (error: any) {
@@ -93,7 +93,7 @@ const SimpleMetaMaskTest: React.FC = () => {
     addLog('🔄 Updating balance...');
     
     try {
-      await SimpleWalletService.updateBalance();
+      await ImprovedMobileMetaMaskService.updateBalance();
       checkConnectionStatus();
       addLog('✅ Balance updated successfully');
     } catch (error: any) {

@@ -14,7 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import CeloService, { TOKEN_ADDRESSES } from '../services/CeloService';
-import SimpleWalletService from '../services/SimpleWalletService';
+import ImprovedMobileMetaMaskService from '../services/ImprovedMobileMetaMaskService';
 import BalanceCard from '../components/BalanceCard';
 import QuickActions from '../components/QuickActions';
 import RecentTransactions from '../components/RecentTransactions';
@@ -63,7 +63,7 @@ const HomeScreen: React.FC = () => {
       setNetworkInfo(network);
       
       // Check if we're already connected to a wallet
-      const walletConnectionStatus = SimpleWalletService.getConnectionStatus();
+      const walletConnectionStatus = ImprovedMobileMetaMaskService.getConnectionStatus();
       if (walletConnectionStatus && walletConnectionStatus.address) {
         setIsConnected(true);
         setAddress(walletConnectionStatus.address);
@@ -106,11 +106,11 @@ const HomeScreen: React.FC = () => {
     if (walletType === 'metamask') {
       try {
         // Use the unified MetaMask service
-        const success = await SimpleWalletService.connect();
+        const success = await ImprovedMobileMetaMaskService.connect();
         
         if (success) {
-          const connectionStatus = SimpleWalletService.getConnectionStatus();
-          console.log('HomeScreen: SimpleWalletService connection status:', connectionStatus);
+          const connectionStatus = ImprovedMobileMetaMaskService.getConnectionStatus();
+          console.log('HomeScreen: ImprovedMobileMetaMaskService connection status:', connectionStatus);
           
           if (connectionStatus && connectionStatus.address) {
             // Successfully connected
@@ -177,7 +177,7 @@ const HomeScreen: React.FC = () => {
 
   const handleDisconnectWallet = async () => {
     try {
-      await SimpleWalletService.disconnect();
+      await ImprovedMobileMetaMaskService.disconnect();
       CeloService.disconnect();
       setIsConnected(false);
       setAddress('');
