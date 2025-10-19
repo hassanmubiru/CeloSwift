@@ -1,12 +1,14 @@
 import 'react-native-get-random-values';
 import 'react-native-url-polyfill/auto';
+import 'react-native-crypto-js';
+import './src/utils/polyfills';
 import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, SafeAreaView } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import WalletConnectV2Service from './src/services/WalletConnectV2Service';
+import SimpleWalletService from './src/services/SimpleWalletService';
 
 // Import screens
 import HomeScreen from './src/screens/HomeScreen';
@@ -19,18 +21,18 @@ import TestMetaMaskScreen from './src/screens/TestMetaMaskScreen';
 const Tab = createBottomTabNavigator();
 
 export default function App() {
-  // Initialize WalletConnect when app starts
+  // Initialize SimpleWalletService when app starts
   useEffect(() => {
-    const initializeWalletConnect = async () => {
+    const initializeWalletService = async () => {
       try {
-        await WalletConnectV2Service.initialize();
-        console.log('App: WalletConnect initialized successfully');
+        await SimpleWalletService.initialize();
+        console.log('App: SimpleWalletService initialized successfully');
       } catch (error) {
-        console.error('App: Failed to initialize WalletConnect:', error);
+        console.error('App: Failed to initialize SimpleWalletService:', error);
       }
     };
 
-    initializeWalletConnect();
+    initializeWalletService();
   }, []);
 
   return (

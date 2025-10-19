@@ -2,22 +2,28 @@ const { getDefaultConfig } = require('expo/metro-config');
 
 const config = getDefaultConfig(__dirname);
 
-// Add comprehensive crypto polyfills for Node.js modules
+// Add resolver configuration for polyfills
 config.resolver.alias = {
   crypto: 'react-native-crypto-js',
   stream: 'readable-stream',
   buffer: '@craftzdog/react-native-buffer',
-  util: 'util',
-  assert: 'assert',
-  os: 'os-browserify/browser',
+  os: 'os-browserify',
   path: 'path-browserify',
-  url: 'react-native-url-polyfill',
-  fs: false,
-  net: false,
-  tls: false,
+  util: 'util',
 };
 
-// Ensure proper module resolution
+// Add polyfills to resolver
 config.resolver.platforms = ['ios', 'android', 'native', 'web'];
+
+// Configure transformer for better compatibility
+config.transformer = {
+  ...config.transformer,
+  minifierConfig: {
+    ...config.transformer.minifierConfig,
+    mangle: {
+      keep_fnames: true,
+    },
+  },
+};
 
 module.exports = config;

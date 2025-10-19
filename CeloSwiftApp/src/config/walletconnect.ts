@@ -4,7 +4,7 @@
 export const WALLETCONNECT_CONFIG = {
   // You can use this demo project ID for testing, but for production
   // you should get your own Project ID from WalletConnect Cloud
-  projectId: '64bf4df50ff30454e356068c418b9d31', // Demo project ID - replace with your own
+  projectId: process.env.WALLETCONNECT_PROJECT_ID || '64bf4df50ff30454e356068c418b9d31', // Get your own from https://cloud.walletconnect.com/
   
   // App metadata
   metadata: {

@@ -14,8 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import CeloService, { TOKEN_ADDRESSES } from '../services/CeloService';
-import Web3ProviderService from '../services/Web3ProviderService';
-import MobileWalletService from '../services/MobileWalletService';
+import SimpleWalletService from '../services/SimpleWalletService';
 import BalanceCard from '../components/BalanceCard';
 import QuickActions from '../components/QuickActions';
 import RecentTransactions from '../components/RecentTransactions';
@@ -104,51 +103,43 @@ const HomeScreen: React.FC = () => {
 
   const handleWalletConnect = async (walletType: string) => {
     console.log('HomeScreen: handleWalletConnect called with walletType:', walletType);
-    if (walletType === 'metamask' || walletType === 'coinbase' || walletType === 'trust') {
-      // Check if we actually connected using mobile service
-      const connectionStatus = MobileWalletService.getConnectionStatus();
-      console.log('HomeScreen: MobileWalletService connection status:', connectionStatus);
-      
-      // Check if we have a valid connection
-      if (connectionStatus && connectionStatus.address) {
-        // Successfully connected
-        setIsConnected(true);
-        setAddress(connectionStatus.address);
+    if (walletType === 'metamask') {
+      try {
+        // Use the unified MetaMask service
+        const success = await SimpleWalletService.connect();
         
-        // Update CeloService with the mobile wallet provider and signer
-        if (connectionStatus.provider && connectionStatus.signer) {
-          // Use the mobile wallet provider and signer for Celo operations
-          await CeloService.connectExternalWallet(connectionStatus.provider, connectionStatus.signer);
+        if (success) {
+          const connectionStatus = SimpleWalletService.getConnectionStatus();
+          console.log('HomeScreen: SimpleWalletService connection status:', connectionStatus);
+          
+          if (connectionStatus && connectionStatus.address) {
+            // Successfully connected
+            setIsConnected(true);
+            setAddress(connectionStatus.address);
+            
+            // Update CeloService with the wallet provider and signer
+            if (connectionStatus.provider && connectionStatus.signer) {
+              // Use the wallet provider and signer for Celo operations
+              await CeloService.connectExternalWallet(connectionStatus.provider, connectionStatus.signer);
+            }
+            
+            // Fetch user data
+            await fetchUserData();
+            
+            Alert.alert(
+              'MetaMask Connected Successfully!',
+              `Connected to ${connectionStatus.walletType || 'MetaMask'}\nAddress: ${connectionStatus.address.slice(0, 6)}...${connectionStatus.address.slice(-4)}`,
+              [{ text: 'OK' }]
+            );
+          }
+        } else {
+          console.log('HomeScreen: MetaMask connection failed or cancelled');
         }
-        
-        // Fetch user data
-        await fetchUserData();
-        
-        Alert.alert(
-          'Wallet Connected Successfully!',
-          `Connected to ${connectionStatus.walletType || 'MetaMask'}\nAddress: ${connectionStatus.address.slice(0, 6)}...${connectionStatus.address.slice(-4)}`,
-          [{ text: 'OK' }]
-        );
-      } else {
-        // Connection process completed but not actually connected
-        console.log('Wallet connection process completed (not connected)');
-        
-        // Show helpful message for MetaMask specifically
-        if (walletType === 'metamask') {
-          Alert.alert(
-            'MetaMask Connection',
-            'MetaMask connection process completed. If you\'re not connected, try connecting again.',
-            [
-              { 
-                text: 'Connect Again', 
-                onPress: () => setShowWalletModal(true)
-              },
-              { text: 'OK' }
-            ]
-          );
-        }
+      } catch (error) {
+        console.error('HomeScreen: MetaMask connection error:', error);
+        Alert.alert('Connection Error', 'Failed to connect to MetaMask');
       }
-    } else {
+    } else if (walletType === 'coinbase' || walletType === 'trust') {
       // For other wallets, show instructions
       setSelectedWallet(walletType);
       setShowInstructions(true);

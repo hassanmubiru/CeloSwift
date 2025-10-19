@@ -5,282 +5,213 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
-  Platform,
+  ActivityIndicator,
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import SimpleWalletService from '../services/SimpleWalletService';
 
 const SimpleMetaMaskTest: React.FC = () => {
+  const [isConnected, setIsConnected] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [connectionInfo, setConnectionInfo] = useState<any>(null);
   const [logs, setLogs] = useState<string[]>([]);
-  const [isConnecting, setIsConnecting] = useState(false);
+
+  useEffect(() => {
+    // Initialize the service
+    initializeService();
+    
+    // Check current connection status
+    checkConnectionStatus();
+  }, []);
+
+  const initializeService = async () => {
+    try {
+      addLog('Initializing MetaMask service...');
+      const success = await SimpleWalletService.initialize();
+      if (success) {
+        addLog('✅ MetaMask service initialized successfully');
+      } else {
+        addLog('❌ Failed to initialize MetaMask service');
+      }
+    } catch (error) {
+      addLog(`❌ Initialization error: ${error}`);
+    }
+  };
+
+  const checkConnectionStatus = () => {
+    const status = SimpleWalletService.getConnectionStatus();
+    setConnectionInfo(status);
+    setIsConnected(status.connected);
+    addLog(`Connection status: ${status.connected ? 'Connected' : 'Not connected'}`);
+  };
 
   const addLog = (message: string) => {
     const timestamp = new Date().toLocaleTimeString();
-    setLogs(prev => [`[${timestamp}] ${message}`, ...prev.slice(0, 19)]);
-    console.log(`[MetaMask Test] ${message}`);
+    const logMessage = `[${timestamp}] ${message}`;
+    setLogs(prev => [...prev, logMessage]);
+    console.log(logMessage);
   };
 
-  useEffect(() => {
-    addLog('Component mounted');
-    checkEnvironment();
-  }, []);
-
-  const checkEnvironment = () => {
-    addLog('=== Environment Check ===');
-    addLog(`Platform: ${Platform.OS}`);
-    addLog(`Has window: ${typeof window !== 'undefined'}`);
-    
-    if (typeof window !== 'undefined') {
-      addLog(`Has ethereum: ${!!(window as any).ethereum}`);
-      
-      if ((window as any).ethereum) {
-        const ethereum = (window as any).ethereum;
-        addLog(`Is MetaMask: ${ethereum.isMetaMask}`);
-        addLog(`Version: ${ethereum.version || 'unknown'}`);
-        addLog(`Is connected: ${ethereum.isConnected?.() || 'unknown'}`);
-        addLog(`User agent: ${navigator.userAgent.substring(0, 50)}...`);
-      }
-    }
-  };
-
-  const testBasicConnection = async () => {
-    addLog('=== Testing Basic Connection ===');
-    
-    if (typeof window === 'undefined') {
-      addLog('❌ Not in browser environment');
-      Alert.alert('Error', 'Not in browser environment');
-      return;
-    }
-
-    if (!(window as any).ethereum) {
-      addLog('❌ MetaMask not found');
-      Alert.alert(
-        'MetaMask Not Found',
-        'Please install MetaMask browser extension.\n\nVisit: https://metamask.io/download/'
-      );
-      return;
-    }
-
-    addLog('✅ MetaMask detected');
+  const connectMetaMask = async () => {
+    setIsLoading(true);
+    addLog('🔄 Starting MetaMask connection...');
     
     try {
-      setIsConnecting(true);
-      addLog('🔄 Requesting account access...');
+      const success = await SimpleWalletService.connect();
       
-      const ethereum = (window as any).ethereum;
-      const accounts = await ethereum.request({ 
-        method: 'eth_requestAccounts' 
-      });
-      
-      if (accounts && accounts.length > 0) {
-        addLog(`✅ Connected successfully: ${accounts[0]}`);
-        Alert.alert('Success!', `Connected to: ${accounts[0]}`);
+      if (success) {
+        addLog('✅ MetaMask connected successfully!');
+        checkConnectionStatus();
       } else {
-        addLog('❌ No accounts returned');
-        Alert.alert('Error', 'No accounts returned from MetaMask');
+        addLog('❌ MetaMask connection failed or cancelled');
       }
     } catch (error: any) {
-      addLog(`❌ Connection failed: ${error.message}`);
-      addLog(`❌ Error code: ${error.code}`);
-      
-      let errorMessage = 'Connection failed';
-      if (error.code === 4001) {
-        errorMessage = 'User rejected the connection request';
-      } else if (error.code === -32002) {
-        errorMessage = 'Connection request already pending';
-      } else if (error.code === 4902) {
-        errorMessage = 'MetaMask is not connected to any network';
-      }
-      
-      Alert.alert('Connection Error', errorMessage);
+      addLog(`❌ Connection error: ${error.message || error}`);
     } finally {
-      setIsConnecting(false);
+      setIsLoading(false);
     }
   };
 
-  const testAccountCheck = async () => {
-    addLog('=== Testing Account Check ===');
+  const disconnectMetaMask = async () => {
+    setIsLoading(true);
+    addLog('🔄 Disconnecting from MetaMask...');
     
-    if (!(window as any).ethereum) {
-      addLog('❌ No ethereum provider');
-      return;
-    }
-
     try {
-      const ethereum = (window as any).ethereum;
-      const accounts = await ethereum.request({ method: 'eth_accounts' });
-      
-      if (accounts && accounts.length > 0) {
-        addLog(`✅ Already connected: ${accounts[0]}`);
-        Alert.alert('Already Connected', `Account: ${accounts[0]}`);
-      } else {
-        addLog('ℹ️ No accounts connected');
-        Alert.alert('Not Connected', 'No accounts currently connected');
-      }
+      await SimpleWalletService.disconnect();
+      addLog('✅ Disconnected from MetaMask');
+      checkConnectionStatus();
     } catch (error: any) {
-      addLog(`❌ Account check failed: ${error.message}`);
+      addLog(`❌ Disconnect error: ${error.message || error}`);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const testNetworkSwitch = async () => {
-    addLog('=== Testing Network Switch ===');
+  const updateBalance = async () => {
+    setIsLoading(true);
+    addLog('🔄 Updating balance...');
     
-    if (!(window as any).ethereum) {
-      addLog('❌ No ethereum provider');
-      return;
-    }
-
     try {
-      const ethereum = (window as any).ethereum;
-      const targetChainId = '0xaef3'; // Celo Alfajores
-      
-      // Get current chain
-      const currentChainId = await ethereum.request({ method: 'eth_chainId' });
-      addLog(`Current chain: ${currentChainId}`);
-      addLog(`Target chain: ${targetChainId}`);
-
-      if (currentChainId === targetChainId) {
-        addLog('✅ Already on correct network');
-        Alert.alert('Network OK', 'Already on Celo Alfajores network');
-        return;
-      }
-
-      // Try to switch
-      addLog('🔄 Switching to Celo network...');
-      await ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: targetChainId }],
-      });
-      
-      addLog('✅ Network switch successful');
-      Alert.alert('Success', 'Switched to Celo Alfajores network');
+      await SimpleWalletService.updateBalance();
+      checkConnectionStatus();
+      addLog('✅ Balance updated successfully');
     } catch (error: any) {
-      addLog(`❌ Network switch failed: ${error.message}`);
-      
-      if (error.code === 4902) {
-        addLog('🔄 Network not found, trying to add...');
-        try {
-          await ethereum.request({
-            method: 'wallet_addEthereumChain',
-            params: [
-              {
-                chainId: '0xaef3',
-                chainName: 'Celo Alfajores Testnet',
-                rpcUrls: ['https://alfajores-forno.celo-testnet.org'],
-                nativeCurrency: {
-                  name: 'CELO',
-                  symbol: 'CELO',
-                  decimals: 18,
-                },
-                blockExplorerUrls: ['https://alfajores.celoscan.io'],
-              },
-            ],
-          });
-          addLog('✅ Network added successfully');
-          Alert.alert('Success', 'Celo network added to MetaMask');
-        } catch (addError: any) {
-          addLog(`❌ Failed to add network: ${addError.message}`);
-          Alert.alert('Error', 'Failed to add Celo network');
-        }
-      } else {
-        Alert.alert('Network Error', error.message);
-      }
+      addLog(`❌ Balance update error: ${error.message || error}`);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const clearLogs = () => {
     setLogs([]);
-    addLog('Logs cleared');
+    addLog('📝 Logs cleared');
+  };
+
+  const formatAddress = (address: string) => {
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>MetaMask Connection Test</Text>
-        <Text style={styles.subtitle}>Simple test to debug connection issues</Text>
+        <Ionicons name="wallet" size={32} color="#35D07F" />
+        <Text style={styles.title}>MetaMask Test</Text>
+        <Text style={styles.subtitle}>Simple connection test</Text>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Quick Tests</Text>
-        
-        <TouchableOpacity
-          style={[styles.button, isConnecting && styles.buttonDisabled]}
-          onPress={testBasicConnection}
-          disabled={isConnecting}
-        >
-          <Ionicons name="link" size={20} color="#FFFFFF" />
-          <Text style={styles.buttonText}>
-            {isConnecting ? 'Connecting...' : 'Test Connection'}
+      <View style={styles.statusCard}>
+        <View style={styles.statusHeader}>
+          <View style={[
+            styles.statusIndicator, 
+            { backgroundColor: isConnected ? '#35D07F' : '#FF6B6B' }
+          ]} />
+          <Text style={styles.statusText}>
+            {isConnected ? 'Connected' : 'Not Connected'}
           </Text>
-        </TouchableOpacity>
+        </View>
 
-        <TouchableOpacity
-          style={styles.buttonSecondary}
-          onPress={testAccountCheck}
-        >
-          <Ionicons name="person" size={20} color="#3B82F6" />
-          <Text style={styles.buttonTextSecondary}>Check Accounts</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.buttonSecondary}
-          onPress={testNetworkSwitch}
-        >
-          <Ionicons name="swap-horizontal" size={20} color="#3B82F6" />
-          <Text style={styles.buttonTextSecondary}>Test Network Switch</Text>
-        </TouchableOpacity>
+        {isConnected && connectionInfo && (
+          <View style={styles.connectionInfo}>
+            <Text style={styles.infoLabel}>Address:</Text>
+            <Text style={styles.infoValue}>{formatAddress(connectionInfo.address)}</Text>
+            
+            <Text style={styles.infoLabel}>Network:</Text>
+            <Text style={styles.infoValue}>{connectionInfo.networkName}</Text>
+            
+            <Text style={styles.infoLabel}>Wallet Type:</Text>
+            <Text style={styles.infoValue}>{connectionInfo.walletType}</Text>
+            
+            <Text style={styles.infoLabel}>Balance:</Text>
+            <Text style={styles.infoValue}>{connectionInfo.balance} CELO</Text>
+          </View>
+        )}
       </View>
 
-      <View style={styles.section}>
-        <View style={styles.logHeader}>
-          <Text style={styles.sectionTitle}>Debug Logs</Text>
+      <View style={styles.actions}>
+        {!isConnected ? (
+          <TouchableOpacity
+            style={[styles.button, styles.connectButton]}
+            onPress={connectMetaMask}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <Ionicons name="log-in" size={24} color="#FFFFFF" />
+            )}
+            <Text style={styles.buttonText}>Connect MetaMask</Text>
+        </TouchableOpacity>
+        ) : (
+          <View style={styles.connectedActions}>
+        <TouchableOpacity
+              style={[styles.button, styles.updateButton]}
+              onPress={updateBalance}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Ionicons name="refresh" size={24} color="#FFFFFF" />
+              )}
+              <Text style={styles.buttonText}>Update Balance</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+              style={[styles.button, styles.disconnectButton]}
+              onPress={disconnectMetaMask}
+              disabled={isLoading}
+        >
+              <Ionicons name="log-out" size={24} color="#FFFFFF" />
+              <Text style={styles.buttonText}>Disconnect</Text>
+        </TouchableOpacity>
+          </View>
+        )}
+      </View>
+
+      <View style={styles.logsSection}>
+        <View style={styles.logsHeader}>
+          <Text style={styles.logsTitle}>Connection Logs</Text>
           <TouchableOpacity onPress={clearLogs} style={styles.clearButton}>
-            <Ionicons name="trash" size={16} color="#6B7280" />
-            <Text style={styles.clearButtonText}>Clear</Text>
+            <Ionicons name="trash" size={16} color="#8E8E93" />
           </TouchableOpacity>
         </View>
         
-        <View style={styles.logContainer}>
-          {logs.length === 0 ? (
-            <Text style={styles.noLogsText}>No logs yet. Run a test to see debug information.</Text>
-          ) : (
-            logs.map((log, index) => (
+        <ScrollView style={styles.logsContainer} nestedScrollEnabled>
+          {logs.map((log, index) => (
               <Text key={index} style={styles.logText}>{log}</Text>
-            ))
-          )}
-        </View>
+          ))}
+        </ScrollView>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Troubleshooting Tips</Text>
-        
-        <View style={styles.tipContainer}>
-          <Ionicons name="bulb" size={20} color="#F59E0B" />
-          <Text style={styles.tipText}>
-            Make sure MetaMask is installed and unlocked
+      <View style={styles.instructions}>
+        <Text style={styles.instructionsTitle}>Instructions:</Text>
+        <Text style={styles.instructionText}>
+          • For web: Install MetaMask browser extension{'\n'}
+          • For mobile: Enter your MetaMask wallet address{'\n'}
+          • Make sure MetaMask is unlocked{'\n'}
+          • This test connects to Celo Alfajores testnet
           </Text>
-        </View>
-        
-        <View style={styles.tipContainer}>
-          <Ionicons name="shield" size={20} color="#F59E0B" />
-          <Text style={styles.tipText}>
-            Disable popup blockers for this site
-          </Text>
-        </View>
-        
-        <View style={styles.tipContainer}>
-          <Ionicons name="refresh" size={20} color="#F59E0B" />
-          <Text style={styles.tipText}>
-            Try refreshing the page if connection fails
-          </Text>
-        </View>
-        
-        <View style={styles.tipContainer}>
-          <Ionicons name="globe" size={20} color="#F59E0B" />
-          <Text style={styles.tipText}>
-            Ensure you're on HTTPS (not HTTP)
-          </Text>
-        </View>
       </View>
     </ScrollView>
   );
@@ -289,119 +220,152 @@ const SimpleMetaMaskTest: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#F2F2F7',
   },
   header: {
-    backgroundColor: '#F6851B',
+    alignItems: 'center',
     padding: 20,
-    paddingTop: 40,
+    backgroundColor: '#FFFFFF',
+    marginBottom: 10,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 8,
+    color: '#1C1C1E',
+    marginTop: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: '#8E8E93',
+    marginTop: 4,
   },
-  section: {
+  statusCard: {
     backgroundColor: '#FFFFFF',
     margin: 16,
+    padding: 20,
     borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  sectionTitle: {
+  statusHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  statusIndicator: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: 8,
+  },
+  statusText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1F2937',
-    marginBottom: 16,
+    color: '#1C1C1E',
+  },
+  connectionInfo: {
+    gap: 8,
+  },
+  infoLabel: {
+    fontSize: 14,
+    color: '#8E8E93',
+    fontWeight: '500',
+  },
+  infoValue: {
+    fontSize: 16,
+    color: '#1C1C1E',
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  actions: {
+    margin: 16,
+  },
+  connectButton: {
+    backgroundColor: '#35D07F',
+  },
+  updateButton: {
+    backgroundColor: '#007AFF',
+  },
+  disconnectButton: {
+    backgroundColor: '#FF6B6B',
   },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#10B981',
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    marginBottom: 12,
+    padding: 16,
+    borderRadius: 12,
+    gap: 8,
   },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonSecondary: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F3F4F6',
-    borderColor: '#3B82F6',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    marginBottom: 12,
+  connectedActions: {
+    gap: 12,
   },
   buttonText: {
-    fontSize: 16,
-    fontWeight: '600',
     color: '#FFFFFF',
-    marginLeft: 8,
-  },
-  buttonTextSecondary: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#3B82F6',
-    marginLeft: 8,
   },
-  logHeader: {
+  logsSection: {
+    backgroundColor: '#FFFFFF',
+    margin: 16,
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  logsHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
   },
+  logsTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1C1C1E',
+  },
   clearButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
+    padding: 4,
   },
-  clearButtonText: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginLeft: 4,
-  },
-  logContainer: {
-    backgroundColor: '#F9FAFB',
+  logsContainer: {
+    maxHeight: 200,
+    backgroundColor: '#F2F2F7',
     borderRadius: 8,
     padding: 12,
-    maxHeight: 300,
-  },
-  noLogsText: {
-    fontSize: 14,
-    color: '#6B7280',
-    textAlign: 'center',
-    fontStyle: 'italic',
   },
   logText: {
     fontSize: 12,
-    color: '#374151',
+    color: '#1C1C1E',
     marginBottom: 4,
     fontFamily: 'monospace',
   },
-  tipContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
+  instructions: {
+    backgroundColor: '#FFFFFF',
+    margin: 16,
+    padding: 16,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  tipText: {
+  instructionsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1C1C1E',
+    marginBottom: 8,
+  },
+  instructionText: {
     fontSize: 14,
-    color: '#374151',
-    marginLeft: 8,
-    flex: 1,
+    color: '#8E8E93',
+    lineHeight: 20,
   },
 });
 
