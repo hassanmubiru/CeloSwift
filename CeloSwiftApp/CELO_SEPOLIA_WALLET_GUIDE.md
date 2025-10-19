@@ -8,7 +8,7 @@ I've successfully implemented a **professional wallet connection service** that 
 
 ### **1. Celo Sepolia Testnet Integration**
 - ✅ **Correct Chain ID** - 11142220 (official Celo Sepolia)
-- ✅ **Thirdweb RPC** - `https://11142220.rpc.thirdweb.com`
+- ✅ **Direct Celo RPC** - `https://sepolia-forno.celo-testnet.org`
 - ✅ **Block Explorer** - `https://celo-sepolia.blockscout.com`
 - ✅ **Native Token** - CELO-S (Celo Sepolia token)
 - ✅ **Modern Testnet** - Latest Celo development network
@@ -32,7 +32,7 @@ I've successfully implemented a **professional wallet connection service** that 
 private readonly CELO_SEPOLIA = {
   chainId: 11142220, // Correct Celo Sepolia chain ID
   chainName: 'Celo Sepolia Testnet',
-  rpcUrls: ['https://11142220.rpc.thirdweb.com'],
+    rpcUrls: ['https://sepolia-forno.celo-testnet.org'], // Direct Celo Sepolia RPC
   nativeCurrency: {
     name: 'CELO',
     symbol: 'CELO-S',
@@ -128,7 +128,7 @@ await this.completeConnection(address);
 - Authenticate with GitHub to receive CELO-S tokens
 - Add Celo Sepolia network to MetaMask:
   - **Network Name:** Celo Sepolia Testnet
-  - **RPC URL:** `https://11142220.rpc.thirdweb.com`
+  - **RPC URL:** `https://sepolia-forno.celo-testnet.org`
   - **Chain ID:** 11142220
   - **Currency Symbol:** CELO-S
   - **Block Explorer:** `https://celo-sepolia.blockscout.com`

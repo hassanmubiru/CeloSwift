@@ -31,7 +31,7 @@ class CeloSepoliaWalletService extends EventEmitter {
   private readonly CELO_SEPOLIA = {
     chainId: 11142220, // Correct Celo Sepolia chain ID
     chainName: 'Celo Sepolia Testnet',
-    rpcUrls: ['https://11142220.rpc.thirdweb.com'],
+    rpcUrls: ['https://sepolia-forno.celo-testnet.org'], // Direct Celo Sepolia RPC
     nativeCurrency: {
       name: 'CELO',
       symbol: 'CELO-S',

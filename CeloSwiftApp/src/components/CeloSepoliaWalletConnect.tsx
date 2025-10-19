@@ -150,6 +150,7 @@ const CeloSepoliaWalletConnect: React.FC = () => {
                 <Text style={styles.infoDescription}>
                   Professional wallet integration for Celo Sepolia testnet:
                   {'\n'}• Modern Celo testnet (Chain ID: 11142220)
+                  {'\n'}• Direct Celo Sepolia RPC connection
                   {'\n'}• Automatic deep linking on mobile
                   {'\n'}• Seamless app return after connection
                   {'\n'}• Professional error handling
@@ -181,7 +182,7 @@ const CeloSepoliaWalletConnect: React.FC = () => {
                 {'\n'}✅ Fast transaction confirmations
                 {'\n'}✅ Easy token acquisition via faucet
                 {'\n'}✅ Active community support
-                {'\n'}✅ Thirdweb RPC integration
+                {'\n'}✅ Direct Celo Sepolia RPC connection
               </Text>
             </View>
           </View>

@@ -14,7 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import CeloService, { TOKEN_ADDRESSES } from '../services/CeloService';
-import WalletService from '../services/WalletService';
+import CeloSepoliaWalletService from '../services/CeloSepoliaWalletService';
 import BalanceCard from '../components/BalanceCard';
 import QuickActions from '../components/QuickActions';
 import RecentTransactions from '../components/RecentTransactions';
@@ -62,8 +62,8 @@ const HomeScreen: React.FC = () => {
       const network = await CeloService.getNetworkInfo();
       setNetworkInfo(network);
       
-      // Check if we're already connected to a wallet
-      const walletConnectionStatus = WalletService.getConnectionStatus();
+          // Check if we're already connected to a wallet
+          const walletConnectionStatus = CeloSepoliaWalletService.getConnectionStatus();
       if (walletConnectionStatus && walletConnectionStatus.address) {
         setIsConnected(true);
         setAddress(walletConnectionStatus.address);
@@ -105,12 +105,12 @@ const HomeScreen: React.FC = () => {
     console.log('HomeScreen: handleWalletConnect called with walletType:', walletType);
     if (walletType === 'metamask') {
       try {
-        // Use the unified MetaMask service
-        const success = await WalletService.connect();
+            // Use the Celo Sepolia wallet service
+            const success = await CeloSepoliaWalletService.connect();
         
         if (success) {
-          const connectionStatus = WalletService.getConnectionStatus();
-          console.log('HomeScreen: WalletService connection status:', connectionStatus);
+          const connectionStatus = CeloSepoliaWalletService.getConnectionStatus();
+          console.log('HomeScreen: CeloSepoliaWalletService connection status:', connectionStatus);
           
           if (connectionStatus && connectionStatus.address) {
             // Successfully connected
@@ -176,9 +176,9 @@ const HomeScreen: React.FC = () => {
   };
 
   const handleDisconnectWallet = async () => {
-    try {
-      await WalletService.disconnect();
-      CeloService.disconnect();
+        try {
+          await CeloSepoliaWalletService.disconnect();
+          CeloService.disconnect();
       setIsConnected(false);
       setAddress('');
       setBalance('0.00');

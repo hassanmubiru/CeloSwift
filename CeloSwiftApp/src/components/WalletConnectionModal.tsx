@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import WalletDetectionService, { WalletInfo } from '../services/WalletDetectionService';
-import WalletService from '../services/WalletService';
+import CeloSepoliaWalletService from '../services/CeloSepoliaWalletService';
 
 interface WalletConnectionModalProps {
   visible: boolean;
@@ -51,7 +51,7 @@ const WalletConnectionModal: React.FC<WalletConnectionModalProps> = ({
       if (wallet.id === 'metamask') {
         console.log('WalletConnectionModal: Attempting MetaMask connection...');
         try {
-          const success = await WalletService.connect();
+            const success = await CeloSepoliaWalletService.connect();
           console.log('WalletConnectionModal: MetaMask connection result:', success);
           if (success) {
             console.log('WalletConnectionModal: MetaMask connected successfully, calling onConnect');
