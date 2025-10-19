@@ -9,7 +9,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import SimpleWalletService from '../services/SimpleWalletService';
+import ImprovedMobileMetaMaskService from '../services/ImprovedMobileMetaMaskService';
 
 const SimpleMetaMaskTest: React.FC = () => {
   const [isConnected, setIsConnected] = useState(false);
@@ -28,7 +28,7 @@ const SimpleMetaMaskTest: React.FC = () => {
   const initializeService = async () => {
     try {
       addLog('Initializing MetaMask service...');
-      const success = await SimpleWalletService.initialize();
+      const success = await ImprovedMobileMetaMaskService.initialize();
       if (success) {
         addLog('✅ MetaMask service initialized successfully');
       } else {
@@ -40,7 +40,7 @@ const SimpleMetaMaskTest: React.FC = () => {
   };
 
   const checkConnectionStatus = () => {
-    const status = SimpleWalletService.getConnectionStatus();
+    const status = ImprovedMobileMetaMaskService.getConnectionStatus();
     setConnectionInfo(status);
     setIsConnected(status.connected);
     addLog(`Connection status: ${status.connected ? 'Connected' : 'Not connected'}`);
